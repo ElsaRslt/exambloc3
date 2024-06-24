@@ -16,3 +16,4 @@ class AdminFormule(admin.ModelAdmin):
 admin.site.register(Evenement, AdminEvenement)
 admin.site.register(Discipline, AdminDiscipline)
 admin.site.register(Formule, AdminFormule)
+
