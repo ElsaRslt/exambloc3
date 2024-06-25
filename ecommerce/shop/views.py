@@ -1,3 +1,6 @@
 from django.shortcuts import render
 
-# Create your views here.
+
+#fonction qui va permettre d'afficher le fichier index 
+def index(request):
+    return render(request, 'index.html')
