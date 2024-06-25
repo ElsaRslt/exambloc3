@@ -23,10 +23,10 @@
         {%for ev in evenement_object %}
         <div class="col-md-3">
             <div class="card">
-                <img src="{{ Evenement.image }}" alt=""class="card-ing-top">
+                <img src="{{ ev.image.url }}" alt=""class="card-ing-top">
                 <div class="card-body">
-                    <div class="card-title">{{ Evenement.title }}</div>
-                    <div class="card-text">Prix</div>
+                    <div class="card-title">{{ ev.title }}</div>
+                    <div class="card-text">Prix €</div> <!--trouver moyen pour ajouter le prix en fonction de la formule -->
                     <Button class="btn btn-warning">Acceder aux details</Button>
                     <button class="btn btn-success">Ajouter au panier</button>
                 </div>

@@ -17,7 +17,8 @@ class Evenement (models.Model):
     description = models.TextField()
     category = models.ForeignKey(Discipline, related_name = 'Discipline', on_delete=models.CASCADE)
     date_event = models.DateTimeField()
-    image = models.CharField(max_length=5000, )
+    #image = models.CharField(max_length=5000, )
+    image = models.ImageField(upload_to='event_images/')
     date_added = models.DateTimeField(auto_now=True)
     
     #le dernier evenement créé se place en premier dans la liste 
