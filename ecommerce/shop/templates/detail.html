@@ -1,29 +1,18 @@
-<!--afficher les details de l'evenement  sur la page quand on clique sur le bouton detail -->
-
-{% extends 'base.html'%}
+<!--affiche le detail de l'evenement quand on clique sur acceder au detail -->
+{% extends 'base.html' %} <!-- permet d'avoir l'entête et le menu sur toutes les pages -->
 
 {% block content %} 
-
-<div class="row">
-    <div class="col-md-6">
-        <div>
-            <img src="{{ evenement_object.image }}" alt="">
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-6">
+            <img src="{{ evenement_object.image.url }}" alt="{{ evenement_object.title }}" class="img-fluid">
+        </div>
+        <div class="col-md-6">
+            <h2 class="text-warning">{{ evenement_object.title }}</h2>
+            <p class="text-danger">{{ evenement_object.prix }}</p>
+            <p>{{ evenement_object.description }}</p>
+            <a href="#"><button class="btn btn-success">Ajouter au panier</button></a>
         </div>
     </div>
-    <div class="col-md-6">
-        <div class="text-warning display-3">
-            {{ evenement.title}}
-        </div>
-        <div class="text-danger">
-            {{ evenement.prix}}
-        </div>
-        <div>
-            {{ evenement.description}}
-        </div>
-        <a href="#"><button class="btn btn-success">Ajouter au panier</button></a>
-
-    </div>
-
 </div>
-
-{% endblock%}
+{% endblock %}

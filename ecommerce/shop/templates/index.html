@@ -31,7 +31,7 @@
                         <div class="card-title">{{ ev.title }}</div>
                         <div class="card-text">Prix €</div>
                         <div class="card-text">{{ev.category}}</div>
-                        <a href="{{evenement.id }}" class="btn btn-warning">Accéder aux détails</a> <!--quand on clique on recupere le ID  et donc ca arrive sur la page avec le detail-->
+                        <a href="{% url 'detail' ev.id %}" class="btn btn-warning">Accéder aux détails</a>
                         <button class="btn btn-success">Ajouter au panier</button>
                     </div>
                 </div>
