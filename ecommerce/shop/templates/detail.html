@@ -1,0 +1,29 @@
+<!--afficher les details de l'evenement  sur la page quand on clique sur le bouton detail -->
+
+{% extends 'base.html'%}
+
+{% block content %} 
+
+<div class="row">
+    <div class="col-md-6">
+        <div>
+            <img src="{{ evenement_object.image }}" alt="">
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="text-warning display-3">
+            {{ evenement.title}}
+        </div>
+        <div class="text-danger">
+            {{ evenement.prix}}
+        </div>
+        <div>
+            {{ evenement.description}}
+        </div>
+        <a href="#"><button class="btn btn-success">Ajouter au panier</button></a>
+
+    </div>
+
+</div>
+
+{% endblock%}

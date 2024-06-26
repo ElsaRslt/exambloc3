@@ -18,3 +18,9 @@ def index(request):
     page = request.GET.get('page')
     evenement_object = paginator.get_page(page)
     return render(request, 'index.html', {'evenement_object': evenement_object})
+
+#fonction pour afficher le detail des evenements quand on clique sur le bouton 
+
+def detail(request, myid ):
+    evenement_object = Evenement.objects.get(id=myid)
+    return render(request, 'detail.html', {'evenement_object': evenement_object})
