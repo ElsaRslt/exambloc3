@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from .models import Evenement
 from django.db.models import Q  # Import de l'opérateur Q pour les requêtes complexes
+from django.core.paginator import Paginator
 
 # Fonction qui va permettre d'afficher le fichier index et les images
 def index(request):
@@ -13,5 +14,7 @@ def index(request):
             Q(title__icontains=items_name) |  # Recherche dans le titre de l'événement
             Q(category__name__icontains=items_name)  # Recherche dans le nom de la catégorie (discipline)
         )
-    
+    paginator = Paginator( evenement_object,4) # on veut 4 evenement par page
+    page = request.GET.get('page')
+    evenement_object = paginator.get_page(page)
     return render(request, 'index.html', {'evenement_object': evenement_object})
