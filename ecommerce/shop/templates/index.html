@@ -31,7 +31,7 @@
                         <div class="card-title">{{ ev.title }}</div>
                         <div class="card-text">Prix €</div>
                         <div class="card-text">{{ev.category}}</div>
-                        <Button class="btn btn-warning">Accéder aux détails</Button>
+                        <a href="{% url 'detail' ev.id %}" class="btn btn-warning">Accéder aux détails</a>
                         <button class="btn btn-success">Ajouter au panier</button>
                     </div>
                 </div>
