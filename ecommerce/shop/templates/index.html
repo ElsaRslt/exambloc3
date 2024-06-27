@@ -64,5 +64,18 @@
         </div>
     </div>
 
+{% endblock %}
+
+{% block js %}
+    <script type="text/javascript">
+        console.log('test');
+        //on regarde si le panier est nul. si c'est le cas création d'un panier
+        if(localStorage.getItem('panier')==null){
+            var panier ={};
+        // si c'est pas le cas on ajoute     
+        }else{
+            panier=JSON.parse(localStorage.getItem('panier'))
+        }
+    </script>
 
 {% endblock %}
