@@ -18,7 +18,7 @@
                     {% endfor %}
                 </select>
                 <!--<p id="event-price">{{ formules_with_prices.0.price|floatformat:2 }} €</p>  Prix initial a changer car actuellement n'affiche pas le prix initial --> 
-                <button type="submit" class="btn btn-success shopping_cart">Ajouter au panier</button>
+                <button id="{{evenement_object.id}}" type="submit" class="btn btn-success shopping_cart">Ajouter au panier</button>
             </form>
         </div>
     </div>
@@ -27,30 +27,32 @@
 
 {% block scripts %}
 <script>
+    // pour calculer le prix en fonction de la formule choisie 
     document.getElementById('formule-select').addEventListener('change', function() {
         var selectedOption = this.options[this.selectedIndex];
         var price = parseFloat(selectedOption.getAttribute('data-price-multiplier'));
         document.getElementById('event-price').textContent = price.toFixed(2) + ' €';
     });
-</script>
-{% endblock %}
 
-{% block js %}
-    <script type="text/javascript">
-        console.log('test');
-        //on regarde si le panier est nul. si c'est le cas création d'un panier
-        if(localStorage.getItem('panier')==null){
-            var panier ={};
-        // si c'est pas le cas on ajoute     
-        }else{
-            panier=JSON.parse(localStorage.getItem('panier'));
+    //on regarde si le panier est nul. si c'est le cas création d'un panier
+    if(localStorage.getItem('panier')==null){
+        var panier ={};
+    // si c'est pas le cas on ajoute     
+    }else{
+        panier=JSON.parse(localStorage.getItem('panier'));
+    };
+
+    // on veut recuperer le click de l'utilisateur sur le bouton panier et recuperer l'identifiant du produit
+    $(document).on('click', '.shopping_cart',function(){
+        var item_id = this.id.toString();
+        if (panier[item_id] != undefined){
+            panier[item_id]=panier[item_id]+1
+        }else {
+            panier[item_id] = 1;
         }
-
-        // on veut recuperer le click de l'utilisateur sur le bouton panier
-        $(document).on('click', '.shopping_cart',function(){
-            console.log('ajouter')
-        })
-
+        // on veut le mettre dans le stockage local pour éviter de perdre le panier quand on rafraichi
+        localStorage.setItem('panier', JSON.stringify(panier));
+    });
 
     </script>
 
