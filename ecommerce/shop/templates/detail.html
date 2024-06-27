@@ -18,7 +18,7 @@
                     {% endfor %}
                 </select>
                 <!--<p id="event-price">{{ formules_with_prices.0.price|floatformat:2 }} €</p>  Prix initial a changer car actuellement n'affiche pas le prix initial --> 
-                <button type="submit" class="btn btn-success">Ajouter au panier</button>
+                <button type="submit" class="btn btn-success shopping_cart">Ajouter au panier</button>
             </form>
         </div>
     </div>
@@ -33,4 +33,25 @@
         document.getElementById('event-price').textContent = price.toFixed(2) + ' €';
     });
 </script>
+{% endblock %}
+
+{% block js %}
+    <script type="text/javascript">
+        console.log('test');
+        //on regarde si le panier est nul. si c'est le cas création d'un panier
+        if(localStorage.getItem('panier')==null){
+            var panier ={};
+        // si c'est pas le cas on ajoute     
+        }else{
+            panier=JSON.parse(localStorage.getItem('panier'));
+        }
+
+        // on veut recuperer le click de l'utilisateur sur le bouton panier
+        $(document).on('click', '.shopping_cart',function(){
+            console.log('ajouter')
+        })
+
+
+    </script>
+
 {% endblock %}
