@@ -10,7 +10,7 @@ class AdminEvenement(admin.ModelAdmin):
     list_display = ('title','category','date_added')
     
 class AdminFormule(admin.ModelAdmin):
-    list_display = ('formule', 'price','evet_rattache')
+    list_display = ('formule','price_multiplier')
     
 # enregistrement des class models 
 admin.site.register(Evenement, AdminEvenement)
