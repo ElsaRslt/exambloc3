@@ -17,7 +17,7 @@
                         <option value="{{ formule.id }}" data-price-multiplier="{{ formule.price }}">{{ formule.formule }} - {{ formule.price|floatformat:2 }} €</option>
                     {% endfor %}
                 </select>
-                <p id="event-price">{{ formules_with_prices.0.price|floatformat:2 }} €</p> <!-- Prix initial -->
+                <!--<p id="event-price">{{ formules_with_prices.0.price|floatformat:2 }} €</p>  Prix initial a changer car actuellement n'affiche pas le prix initial --> 
                 <button type="submit" class="btn btn-success">Ajouter au panier</button>
             </form>
         </div>
