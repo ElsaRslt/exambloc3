@@ -44,6 +44,15 @@
             panier = JSON.parse(localStorage.getItem('panier'));
         }
 
+        // Fonction pour calculer le nombre total d'articles dans le panier
+        const calculerNombreTotalArticles = (panier) => {
+            let total = 0;
+            for (let key in panier) {
+                total += panier[key];
+            }
+            return total;
+        }
+
         // Ajouter un écouteur d'événement pour le bouton Ajouter au panier
         document.getElementById('add-to-cart-btn').addEventListener('click', function(event) {
             event.preventDefault(); // pour ne pas recharger la page et voir le degug en console
@@ -59,13 +68,20 @@
 
             localStorage.setItem('panier',JSON.stringify(panier));// Récupération du panier depuis localStorage au chargement de la page
 
-            // pour avoir la longueur du dictionnaire
-            console.log(Object.keys(panier).length);
+            // Pour afficher dans le panier dans la navbar le nombre total d'articles ajoutés au panier 
+            let totalArticles = calculerNombreTotalArticles(panier);
 
             // pour afficher dans le panier dans la navbar le nombre d'evenement rajouter au panier 
-            document.getElementById("shopping").innerHTML= "Panier("+ Object.keys(panier).length+")";
+            document.getElementById("shopping").innerHTML = "Panier(" + totalArticles + ")";
 
             
+        });
+
+        // Mettre à jour le panier lors du chargement de la page
+        document.addEventListener('DOMContentLoaded', function() {
+            let panier = JSON.parse(localStorage.getItem('panier')) || {};
+            let totalArticles = calculerNombreTotalArticles(panier);
+            document.getElementById("shopping").innerHTML = "Panier(" + totalArticles + ")";
         });
 
     </script>
