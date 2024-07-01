@@ -53,11 +53,19 @@
             if (panier[item_id] != undefined ){ 
                 panier[item_id]=panier[item_id]+1; // s'il y a deja un article avec cet id dans le panier on rajoute 1
             }else{
-                panier[item_id]=1; //quand on clic pour la premiere fois on ajoute un 
+                panier[item_id]=1; //quand on clic pour la premiere fois on ajoute 1 
             };
             console.log(panier);
 
             localStorage.setItem('panier',JSON.stringify(panier));// Récupération du panier depuis localStorage au chargement de la page
+
+            // pour avoir la longueur du dictionnaire
+            console.log(Object.keys(panier).length);
+
+            // pour afficher dans le panier dans la navbar le nombre d'evenement rajouter au panier 
+            document.getElementById("shopping").innerHTML= "Panier("+ Object.keys(panier).length+")";
+
+            
         });
 
     </script>
