@@ -17,8 +17,8 @@
                         <option value="{{ formule.id }}" data-price-multiplier="{{ formule.price }}">{{ formule.formule }} - {{ formule.price|floatformat:2 }} €</option>
                     {% endfor %}
                 </select>
-                <!--<p id="event-price">{{ formules_with_prices.0.price|floatformat:2 }} €</p>  Prix initial a changer car actuellement n'affiche pas le prix initial --> 
-                <button id="{{evenement_object.id}}" type="submit" class="btn btn-success shopping_cart">Ajouter au panier</button>
+                <p id="event-price">{{ formules_with_prices.0.price|floatformat:2 }} €</p>
+                <button type="submit" class="btn btn-success shopping_cart">Ajouter au panier</button>
             </form>
         </div>
     </div>
@@ -43,17 +43,19 @@
     };
 
     // on veut recuperer le click de l'utilisateur sur le bouton panier et recuperer l'identifiant du produit
-    $(document).on('click', '.shopping_cart',function(){
+    document.querySelector('.shopping_cart').addEventListener('click', function() {
         var item_id = this.id.toString();
+        var panier = JSON.parse(localStorage.getItem('panier')) || {};
         if (panier[item_id] != undefined){
-            panier[item_id]=panier[item_id]+1
+            panier[item_id]=panier[item_id]+1;
         }else {
             panier[item_id] = 1;
         }
         // on veut le mettre dans le stockage local pour éviter de perdre le panier quand on rafraichi
         localStorage.setItem('panier', JSON.stringify(panier));
+        document.getElementById("shopping").innerHtml="Panier("+Object.keys(panier).length+")"; //afficher le nimbre d'element dans le panier dans la navbar 
     });
 
     </script>
 
-{% endblock %}
+{% endblock %}"                                                                                  

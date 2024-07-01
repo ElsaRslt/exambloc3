@@ -22,7 +22,7 @@ def index(request):
     return render(request, 'index.html', {'evenement_object': evenement_object})
 
 
-#fonction pour afficher le detail des evenements quand on clique sur le bouton 
+#fonction pour afficher le detail des evenements quand on clique sur le bouton detail
 def detail(request, myid):
     evenement_object = get_object_or_404(Evenement, id=myid)
     formules = evenement_object.formules.all()
@@ -39,11 +39,23 @@ def detail(request, myid):
         formule_id = request.POST.get('formule')
         formule = get_object_or_404(Formule, id=formule_id)
         panier = request.session.get('panier', {})
-        panier[evenement_object.id] = {'formule': formule.formule, 'price': formule.price_multiplier, 'quantity': 1}
+        if myid not in panier:
+            panier[myid] = {
+                'formule': formule.formule,
+                'price': evenement_object.base_price * formule.price_multiplier,
+                'quantity': 1
+            }
+        else:
+            panier[myid]['quantity'] += 1
         request.session['panier'] = panier
-        # Rediriger ou afficher un message de succès
 
     return render(request, 'detail.html', {
         'evenement_object': evenement_object,
         'formules_with_prices': formules_with_prices
     })
+    
+    
+# Fonction pour afficher la page du panier
+def panier(request):
+    panier = request.session.get('panier', {})
+    return render(request, 'panier.html', {'panier': panier})
