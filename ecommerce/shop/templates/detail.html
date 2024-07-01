@@ -18,44 +18,48 @@
                     {% endfor %}
                 </select>
                 <p id="event-price">{{ formules_with_prices.0.price|floatformat:2 }} €</p>
-                <button type="submit" class="btn btn-success shopping_cart">Ajouter au panier</button>
+                <button id="add-to-cart-btn" type="submit" class="btn btn-success shopping_cart" data-item-id="{{ evenement_object.id }}">Ajouter au panier</button>
             </form>
         </div>
     </div>
 </div>
 {% endblock %}
 
-{% block scripts %}
-<script>
-    // pour calculer le prix en fonction de la formule choisie 
-    document.getElementById('formule-select').addEventListener('change', function() {
-        var selectedOption = this.options[this.selectedIndex];
-        var price = parseFloat(selectedOption.getAttribute('data-price-multiplier'));
-        document.getElementById('event-price').textContent = price.toFixed(2) + ' €';
-    });
+{% block js %}
+    <script type= "text/javascript">
 
-    //on regarde si le panier est nul. si c'est le cas création d'un panier
-    if(localStorage.getItem('panier')==null){
-        var panier ={};
-    // si c'est pas le cas on ajoute     
-    }else{
-        panier=JSON.parse(localStorage.getItem('panier'));
-    };
+        console.log("tester");
+        // pour calculer le prix en fonction de la formule choisie 
+        document.getElementById('formule-select').addEventListener('change', function() {
+            var selectedOption = this.options[this.selectedIndex];
+            var price = parseFloat(selectedOption.getAttribute('data-price-multiplier'));
+            document.getElementById('event-price').textContent = price.toFixed(2) + ' €';
+        });
 
-    // on veut recuperer le click de l'utilisateur sur le bouton panier et recuperer l'identifiant du produit
-    document.querySelector('.shopping_cart').addEventListener('click', function() {
-        var item_id = this.id.toString();
-        var panier = JSON.parse(localStorage.getItem('panier')) || {};
-        if (panier[item_id] != undefined){
-            panier[item_id]=panier[item_id]+1;
-        }else {
-            panier[item_id] = 1;
+        //on regarde si le panier est nul. si c'est le cas création d'un panier
+        if(localStorage.getItem('panier')==null){
+            var panier ={};
+        // si c'est pas le cas on ajoute     
+        }else{
+            panier = JSON.parse(localStorage.getItem('panier'));
         }
-        // on veut le mettre dans le stockage local pour éviter de perdre le panier quand on rafraichi
-        localStorage.setItem('panier', JSON.stringify(panier));
-        document.getElementById("shopping").innerHtml="Panier("+Object.keys(panier).length+")"; //afficher le nimbre d'element dans le panier dans la navbar 
-    });
+
+        // Ajouter un écouteur d'événement pour le bouton Ajouter au panier
+        document.getElementById('add-to-cart-btn').addEventListener('click', function(event) {
+            event.preventDefault(); // pour ne pas recharger la page et voir le degug en console
+            console.log("ajouter");
+            var item_id = this.getAttribute('data-item-id');
+            console.log(item_id);
+            if (panier[item_id] != undefined ){ 
+                panier[item_id]=panier[item_id]+1; // s'il y a deja un article avec cet id dans le panier on rajoute 1
+            }else{
+                panier[item_id]=1; //quand on clic pour la premiere fois on ajoute un 
+            };
+            console.log(panier);
+
+            localStorage.setItem('panier',JSON.stringify(panier));// Récupération du panier depuis localStorage au chargement de la page
+        });
 
     </script>
 
-{% endblock %}"                                                                                  
+{% endblock %}                                                                                  
