@@ -25,7 +25,7 @@
 </div>
 {% endblock %}
 
-{% block js %}
+{% block script %}
     <script type= "text/javascript">
 
         console.log("tester");
@@ -34,54 +34,6 @@
             var selectedOption = this.options[this.selectedIndex];
             var price = parseFloat(selectedOption.getAttribute('data-price-multiplier'));
             document.getElementById('event-price').textContent = price.toFixed(2) + ' €';
-        });
-
-        //on regarde si le panier est nul. si c'est le cas création d'un panier
-        if(localStorage.getItem('panier')==null){
-            var panier ={};
-        // si c'est pas le cas on ajoute     
-        }else{
-            panier = JSON.parse(localStorage.getItem('panier'));
-        }
-
-        // Fonction pour calculer le nombre total d'articles dans le panier
-        const calculerNombreTotalArticles = (panier) => {
-            let total = 0;
-            for (let key in panier) {
-                total += panier[key];
-            }
-            return total;
-        }
-
-        // Ajouter un écouteur d'événement pour le bouton Ajouter au panier
-        document.getElementById('add-to-cart-btn').addEventListener('click', function(event) {
-            event.preventDefault(); // pour ne pas recharger la page et voir le degug en console
-            console.log("ajouter");
-            var item_id = this.getAttribute('data-item-id');
-            console.log(item_id);
-            if (panier[item_id] != undefined ){ 
-                panier[item_id]=panier[item_id]+1; // s'il y a deja un article avec cet id dans le panier on rajoute 1
-            }else{
-                panier[item_id]=1; //quand on clic pour la premiere fois on ajoute 1 
-            };
-            console.log(panier);
-
-            localStorage.setItem('panier',JSON.stringify(panier));// Récupération du panier depuis localStorage au chargement de la page
-
-            // Pour afficher dans le panier dans la navbar le nombre total d'articles ajoutés au panier 
-            let totalArticles = calculerNombreTotalArticles(panier);
-
-            // pour afficher dans le panier dans la navbar le nombre d'evenement rajouter au panier 
-            document.getElementById("shopping").innerHTML = "Panier(" + totalArticles + ")";
-
-            
-        });
-
-        // Mettre à jour le panier lors du chargement de la page
-        document.addEventListener('DOMContentLoaded', function() {
-            let panier = JSON.parse(localStorage.getItem('panier')) || {};
-            let totalArticles = calculerNombreTotalArticles(panier);
-            document.getElementById("shopping").innerHTML = "Panier(" + totalArticles + ")";
         });
 
     </script>
