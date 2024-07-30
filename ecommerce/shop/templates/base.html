@@ -29,7 +29,9 @@
                                 <a class="nav-link" href="#">Evenements</a>
                             </li>
                             <li class="nav-item">
-                                <a id="shopping" class="nav-link" href="{% url 'panier' %}">Panier</a>
+                                {% comment %} <a id="shopping" class="nav-link" href="{% url 'panier' %}">Panier</a> {% endcomment %}
+                                <button id="shopping" href="{% url 'panier' %}" type="button" class="btn btn-secondary" data-container="body" data-toggle="popover" data-placement="bottom" data-html="true" data-content="Votre panier">Panier(0)
+                                </button>
                             </li>
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -105,6 +107,11 @@
             }
         });
         
+        //affichage du popover quand on clique sur le panier//
+        $(function () {
+            $('[data-toggle="popover"]').popover();
+            document.getElementById('shopping').setAttribute('data-content', '<h5>Votre panier</h5>');
+        })
     </script>
 
 {% endblock %}
