@@ -29,9 +29,8 @@
                                 <a class="nav-link" href="#">Evenements</a>
                             </li>
                             <li class="nav-item">
-                                {% comment %} <a id="shopping" class="nav-link" href="{% url 'panier' %}">Panier</a> {% endcomment %}
-                                <button id="shopping" href="{% url 'panier' %}" type="button" class="btn btn-secondary" data-container="body" data-toggle="popover" data-placement="bottom" data-html="true" data-content="Votre panier">Panier(0)
-                                </button>
+
+                                <a id="shopping" href="{% url 'panier' %}" type="button" class="btn btn-secondary" data-trigger="hover" data-container="body" data-toggle="popover" data-placement="bottom" data-html="true" data-content="Votre panier">Panier(0)</a>
                             </li>
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -80,8 +79,12 @@
         let totalArticles = nbTotalArticle(panier);
         document.getElementById("shopping").innerHTML = "Panier(" + totalArticles + ")";
         console.log(totalArticles);
-        // Initialiser le popover
-        $('[data-toggle="popover"]').popover();
+
+    // Initialiser le popover avec le déclencheur 'hover'
+        $('#shopping').popover({
+            trigger: 'hover',
+            html:true,
+        });
         AfficherListe(panier); // Afficher la liste des articles dans le popover
     });
 
@@ -114,7 +117,7 @@
 
                     // Mettre à jour le contenu du popover
                     AfficherListe(panier);
-                    $('[data-toggle="popover"]').popover('update');
+                    //$('[data-toggle="popover"]').popover('update');
                 });
             }
         });
