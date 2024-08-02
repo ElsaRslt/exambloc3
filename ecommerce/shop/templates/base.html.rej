@@ -1,0 +1,37 @@
+diff a/ecommerce/shop/templates/base.html b/ecommerce/shop/templates/base.html	(rejected hunks)
+@@ -30,7 +30,7 @@
+                             </li>
+                             <li class="nav-item">
+                                 {% comment %} <a id="shopping" class="nav-link" href="{% url 'panier' %}">Panier</a> {% endcomment %}
+-                                <button id="shopping" href="{% url 'panier' %}" type="button" class="btn btn-secondary" data-container="body" data-toggle="popover" data-placement="bottom" data-html="true" data-content="Votre panier">Panier(0)
++                                <button id="shopping" href="{% url 'panier' %}" type="button" class="btn btn-secondary" data-container="body" data-toggle="popover" data-placement="bottom" data-html="true" data-content="bug a corriger la liste ne s'affiche pas ">Panier(0)
+                                 </button>
+                             </li>
+                             <li class="nav-item dropdown">
+@@ -107,11 +107,22 @@
+             }
+         });
+         
+-        //affichage du popover quand on clique sur le panier//
+-        $(function () {
++        AfficherListe(panier)
++        // recuperation du nom des produits cliqués pour les afficher dans le popover//
++        function AfficherListe(panier){
++            var panierString = "";
++            panierString += '<h5>Votre panier<h5>';
++            var index = 1;    
++            for(var x in panier){
++                panierString += index;
++                panierString += document.getElementById("aa"+x).innerHTML +" : "+ panier[x] + '<br/>';
++                index += 1; 
++            }
++            //affichage du popover quand on clique sur le panier//
+             $('[data-toggle="popover"]').popover();
+-            document.getElementById('shopping').setAttribute('data-content', '<h5>Votre panier</h5>');
+-        })
++            // change le contenu du texte du popover//
++            document.getElementById('shopping').setAttribute('data-content', panierString);
++        }
+     </script>
+ 
+ {% endblock %}
