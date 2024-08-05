@@ -7,6 +7,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JO PARIS 2024</title>
     <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 </head>
 <body>
     <div class="container">
@@ -26,7 +29,8 @@
                                 <a class="nav-link" href="#">Evenements</a>
                             </li>
                             <li class="nav-item">
-                                <a id="shopping" class="nav-link" href="{% url 'panier' %}">Panier</a>
+
+                                <a id="shopping" href="{% url 'panier' %}" type="button" class="btn btn-secondary" data-trigger="hover" data-container="body" data-toggle="popover" data-placement="bottom" data-html="true" data-content="Votre panier">Panier(0)</a>
                             </li>
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -63,17 +67,26 @@
     const nbTotalArticle = (panier) => {
         let total = 0;
         for (let key in panier) {
-            total += panier[key];
+            total += panier[key].quantity;
         }
         return total;
     }
 
+
      // Mettre à jour le panier lors du chargement de la page
-        document.addEventListener('DOMContentLoaded', function() {
-            let panier = JSON.parse(localStorage.getItem('panier')) || {};
-            let totalArticles = nbTotalArticle(panier);
-            document.getElementById("shopping").innerHTML = "Panier(" + totalArticles + ")";
+    document.addEventListener('DOMContentLoaded', function() {
+        let panier = JSON.parse(localStorage.getItem('panier')) || {};
+        let totalArticles = nbTotalArticle(panier);
+        document.getElementById("shopping").innerHTML = "Panier(" + totalArticles + ")";
+        console.log(totalArticles);
+
+    // Initialiser le popover avec le déclencheur 'hover'
+        $('#shopping').popover({
+            trigger: 'hover',
+            html:true,
         });
+        AfficherListe(panier); // Afficher la liste des articles dans le popover
+    });
 
         // Ajouter un écouteur d'événement pour le bouton Ajouter au panier (uniquement si présent sur la page)
         document.addEventListener('DOMContentLoaded', function() {
@@ -85,11 +98,14 @@
                     event.preventDefault(); // pour ne pas recharger la page et voir le debug en console
                     console.log("ajouter");
                     var item_id = this.getAttribute('data-item-id');
-                    console.log(item_id);
+                    var item_name = document.querySelector(".titre_ev").textContent.trim(); // avoir le nom de l'evenement
+                    console.log(item_id, item_name);
+
                     if (panier[item_id] !== undefined) { 
-                        panier[item_id] = panier[item_id] + 1; // s'il y a déjà un article avec cet id dans le panier on rajoute 1
+                        panier[item_id].quantity += 1;
+                        //panier[item_id] = panier[item_id] + 1; // s'il y a déjà un article avec cet id dans le panier on rajoute 1
                     } else {
-                        panier[item_id] = 1; // quand on clique pour la première fois on ajoute 1 
+                        panier[item_id] = { name: item_name, quantity: 1 }; // quand on clique pour la première fois on ajoute 1 
                     }
                     console.log(panier);
 
@@ -98,10 +114,33 @@
                     // Pour afficher dans le panier dans la navbar le nombre total d'articles ajoutés au panier 
                     let totalArticles = nbTotalArticle(panier);
                     document.getElementById("shopping").innerHTML = "Panier(" + totalArticles + ")";
+
+                    // Mettre à jour le contenu du popover
+                    AfficherListe(panier);
+                    //$('[data-toggle="popover"]').popover('update');
                 });
             }
         });
         
+    //AfficherListe(panier)
+    // recuperation du nom des produits cliqués pour les afficher dans le popover//
+    function AfficherListe(panier) {
+        var panierString = "<h5>Votre panier</h5>";
+        var index = 1;
+        for (var x in panier) {
+            panierString += index + ". " + panier[x].name + " : " + panier[x].quantity + '<br/>';
+            index += 1;
+        }
+
+        //rajouter un bouton dans le popover pour voir le panier
+        // panierString += "<a href ='/panier' class='btn btn-primary'>Panier</a>"
+        
+    //affichage du popover quand on clique sur le panier//
+       // $('[data-toggle="popover"]').popover();
+    // change le contenu du texte du popover//
+        document.getElementById('shopping').setAttribute('data-content', panierString);
+    };
+
     </script>
 
 {% endblock %}

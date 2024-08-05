@@ -7,7 +7,7 @@
             <img src="{{ evenement_object.image.url }}" width="500px" height="500px" alt="{{ evenement_object.title }}" class="img-fluid">
         </div>
         <div class="col-md-6">
-            <h2 class="text-warning">{{ evenement_object.title }}</h2>
+            <h2 id="titre_ev" class="text-warning titre_ev">{{ evenement_object.title }}</h2>
             <p>{{ evenement_object.description }}</p>
             <form method="post">
                 {% csrf_token %}
@@ -28,7 +28,6 @@
 {% block script %}
     <script type= "text/javascript">
 
-        console.log("tester");
         // pour calculer le prix en fonction de la formule choisie 
         document.getElementById('formule-select').addEventListener('change', function() {
             var selectedOption = this.options[this.selectedIndex];
