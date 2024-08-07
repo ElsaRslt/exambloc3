@@ -15,6 +15,7 @@ def index(request):
             Q(title__icontains=items_name) |  # Recherche dans le titre de l'événement
             Q(category__name__icontains=items_name)  # Recherche dans le nom de la catégorie (discipline)
         )
+        
     #mise en place de la pagination    
     paginator = Paginator( evenement_object,4) # on veut 4 evenement par page
     page = request.GET.get('page')
@@ -29,6 +30,7 @@ def detail(request, myid):
     formules_with_prices = [
         {
             'id': formule.id,
+            'name': evenement_object.title,
             'formule': formule.formule,
             'price': evenement_object.base_price * formule.price_multiplier
         }
@@ -41,6 +43,7 @@ def detail(request, myid):
         panier = request.session.get('panier', {})
         if myid not in panier:
             panier[myid] = {
+                'name': evenement_object.title,
                 'formule': formule.formule,
                 'price': evenement_object.base_price * formule.price_multiplier,
                 'quantity': 1
@@ -50,6 +53,7 @@ def detail(request, myid):
         request.session['panier'] = panier
 
     return render(request, 'detail.html', {
+        'name': evenement_object.title,
         'evenement_object': evenement_object,
         'formules_with_prices': formules_with_prices
     })
