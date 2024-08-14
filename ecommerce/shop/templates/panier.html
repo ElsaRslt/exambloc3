@@ -1,71 +1,129 @@
 {% extends 'base.html' %}
 
-
 {% block content %}
 <div class="container mt-4">
-    <h2>Votre panier</h2>
+    <h2>Votre Panier</h2>
     <div class="row">
-        <div class="col-md-12">
-            <ul class="list-group" id="item-list"></ul>
+        <div class="col-md-8">
+            <table class="table table-bordered">
+                <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">Produit</th>
+                        <th scope="col">Formule</th>
+                        <th scope="col">Prix Unitaire</th>
+                        <th scope="col">Quantité</th>
+                        <th scope="col">Total</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="item-list">
+                    <!-- panier mit à jour via le JS  -->
+                </tbody>
+            </table>
         </div>
-        <div class="mt-4">
-            <h5>Total des articles : <span id="total-articles">0</span></h5>
-            <h5>Prix total : <span id="total-price">0.00</span> € </h5>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Votre commande</h5>
+                    <p class="card-text">Nombre d'articles : <span id="total-articles">0</span></p>
+                    <p class="card-text">Total : <span id="total-price">0.00</span> €</p>
+                    <button class="btn btn-primary" id="checkout-btn">Procéder au paiement</button>
+                </div>
+            </div>
         </div>
     </div>
+</div>
+{% endblock %}
 
+{% block js %}
+<script type="text/javascript">
+    // Vérifier si le panier existe dans le localStorage
+    if (localStorage.getItem('panier') == null) {
+        var panier = {};
+    } else {
+        panier = JSON.parse(localStorage.getItem('panier'));
+    }
 
-{% endblock %} 
+    let totalArticles = 0;
+    let totalPrix = 0;
 
-{% block js %} 
+    // Parcourir chaque élément du panier pour les afficher
+    for (let key in panier) {
+        if (panier.hasOwnProperty(key)) {
+            let item = panier[key];
+            let nom = item.name;
+            let quantite = item.quantity;
+            let formule = item.formule;
+            let prixFormule = parseFloat(formule.split(' - ')[1].replace('€', '').trim());  // Extraire le prix de la formule
+            
+            // Vérifier si le prix est valide
+            if (!isNaN(prixFormule)) {
+                // Ajouter à la table des articles
+                let itemsString = `
+                    <tr data-item-id="${key}">
+                        <td>${nom}</td>
+                        <td>${formule}</td>
+                        <td>${prixFormule.toFixed(2)} €</td>
+                        <td>
+                            <input type="number" class="form-control quantity" data-item-id="${key}" value="${quantite}" min="1">
+                        </td>
+                        <td class="item-total">${(prixFormule * quantite).toFixed(2)} €</td>
+                        <td>
+                            <button class="btn btn-danger btn-sm remove-item" data-item-id="${key}">Supprimer</button>
+                        </td>
+                    </tr>
+                `;
+                $('#item-list').append(itemsString);
 
-    <script type="text/javascript">
-
-        // Vérifier si le panier existe dans le localStorage
-        if (localStorage.getItem('panier')==null){
-            var panier = {};
-        }else{
-            panier = JSON.parse(localStorage.getItem('panier'));
-        }
-
-        let totalArticles = 0;
-        let totalPrix = 0;
-
-
-         // Parcourir chaque élément du panier pour les afficher
-        for (let key in panier) {
-            if (panier.hasOwnProperty(key)) {
-                let item = panier[key];
-                let nom = item.name;
-                let quantite = item.quantity;
-                let formule = item.formule;
-                let prixFormule = parseFloat(formule.split(' - ')[1].replace('€', '').trim());  // Extraire le prix de la formule
-                
-                // Vérifier si le prix est valide
-                if (!isNaN(prixFormule)) {
-                    // Ajouter à la liste des articles
-                    let itemsString = `
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            ${nom} - ${formule}
-                            <span class="badge badge-primary badge-pill">${quantite}</span>
-                        </li>
-                    `;
-                    $('#item-list').append(itemsString);
-
-                    // Calculer les totaux
-                    totalArticles += quantite;
-                    totalPrix += prixFormule * quantite;
-                } else {
-                    console.error(`Le prix pour l'article ${nom} est invalide : ${formule}`);
-                }
+                // Calculer les totaux
+                totalArticles += quantite;
+                totalPrix += prixFormule * quantite;
+            } else {
+                console.error(`Le prix pour l'article ${nom} est invalide : ${formule}`);
             }
         }
+    }
 
-        // Mettre à jour les totaux dans la page
-        document.getElementById('total-articles').textContent = totalArticles;
-        document.getElementById('total-price').textContent = totalPrix.toFixed(2);
+    // Mettre à jour les totaux dans la page
+    document.getElementById('total-articles').textContent = totalArticles;
+    document.getElementById('total-price').textContent = totalPrix.toFixed(2);
 
-    
-    </script>
+    // Événements pour modifier la quantité et supprimer les articles
+    $('#item-list').on('change', '.quantity', function() {
+        let itemId = $(this).data('item-id');
+        let newQuantity = $(this).val();
+        let itemPrice = parseFloat($(`tr[data-item-id="${itemId}"]`).find('td:eq(2)').text().replace(' €', ''));
+        let newTotal = itemPrice * newQuantity;
+        $(`tr[data-item-id="${itemId}"]`).find('.item-total').text(newTotal.toFixed(2) + ' €');
 
-{% endblock%}
+        // Mettre à jour le total global
+        totalArticles = 0;
+        totalPrix = 0;
+        $('#item-list').find('tr').each(function() {
+            let quantity = $(this).find('.quantity').val();
+            let total = $(this).find('.item-total').text().replace(' €', '');
+            totalArticles += parseInt(quantity);
+            totalPrix += parseFloat(total);
+        });
+        $('#total-articles').text(totalArticles);
+        $('#total-price').text(totalPrix.toFixed(2));
+    });
+
+    $('#item-list').on('click', '.remove-item', function() {
+        $(this).closest('tr').remove();
+
+        // Mettre à jour les totaux après suppression
+        totalArticles = 0;
+        totalPrix = 0;
+        $('#item-list').find('tr').each(function() {
+            let quantity = $(this).find('.quantity').val();
+            let total = $(this).find('.item-total').text().replace(' €', '');
+            totalArticles += parseInt(quantity);
+            totalPrix += parseFloat(total);
+        });
+        $('#total-articles').text(totalArticles);
+        $('#total-price').text(totalPrix.toFixed(2));
+    });
+
+</script>
+{% endblock %}
