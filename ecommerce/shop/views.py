@@ -40,20 +40,21 @@ def detail(request, myid):
     if request.method == 'POST':
         formule_id = request.POST.get('formule')
         formule = get_object_or_404(Formule, id=formule_id)
+        formule_name = formule.formule
         panier = request.session.get('panier', {})
-        if myid not in panier:
-            panier[myid] = {
+        panier_key = f"{myid}_{formule_name}"
+        if panier_key not in panier:
+            panier[panier_key] = {
                 'name': evenement_object.title,
-                'formule': formule.formule,
+                'formule': formule_name,
                 'price': evenement_object.base_price * formule.price_multiplier,
                 'quantity': 1
             }
         else:
-            panier[myid]['quantity'] += 1
+            panier[panier_key]['quantity'] += 1
         request.session['panier'] = panier
 
     return render(request, 'detail.html', {
-        'name': evenement_object.title,
         'evenement_object': evenement_object,
         'formules_with_prices': formules_with_prices
     })

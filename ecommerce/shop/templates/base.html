@@ -16,14 +16,14 @@
         <div class="row">
             <div class="col-md-12">
                 <nav class="navbar navbar-expand-lg navbar-light bg-light">
-                    <a class="navbar-brand" href="#">SITE RESERVATION BILLET JO 2024</a>
+                    <a class="navbar-brand" href="{% url 'home'%}">SITE RESERVATION BILLET JO 2024</a>
                     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
                         <span class="navbar-toggler-icon"></span>
                     </button>
                     <div class="collapse navbar-collapse" id="navbarNavDropdown">
                         <ul class="navbar-nav">
                             <li class="nav-item active">
-                                <a class="nav-link" href="#">Acceuil <span class="sr-only">(current)</span></a>
+                                <a class="nav-link" href="{% url 'home'%}">Acceuil <span class="sr-only">(current)</span></a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="#">Evenements</a>
@@ -97,16 +97,24 @@
                 addToCartButton.addEventListener('click', function(event) {
                     event.preventDefault(); // pour ne pas recharger la page et voir le debug en console
                     console.log("ajouter");
+
                     var item_id = this.getAttribute('data-item-id');
                     var item_name = document.querySelector(".titre_ev").textContent.trim(); // avoir le nom de l'evenement
-                    console.log(item_id, item_name);
+                    var selectElement = document.querySelector("select[name='formule']");
+                    var item_formule = selectElement.options[selectElement.selectedIndex].text; // obtenir le texte (nom de la formule) de la sélection
+                    
+                    console.log(item_id, item_name,item_formule);
 
-                    if (panier[item_id] !== undefined) { 
-                        panier[item_id].quantity += 1;
-                        //panier[item_id] = panier[item_id] + 1; // s'il y a déjà un article avec cet id dans le panier on rajoute 1
+                    if (panier[item_id + '_' + item_formule] !== undefined) { 
+                        panier[item_id + '_' + item_formule].quantity += 1;
                     } else {
-                        panier[item_id] = { name: item_name, quantity: 1 }; // quand on clique pour la première fois on ajoute 1 
+                        panier[item_id + '_' + item_formule] = { 
+                            name: item_name, 
+                            formule: item_formule, // Nom de la formule
+                            quantity: 1
+                        }; 
                     }
+
                     console.log(panier);
 
                     localStorage.setItem('panier', JSON.stringify(panier)); // Récupération du panier depuis localStorage au chargement de la page
@@ -128,7 +136,7 @@
         var panierString = "<h5>Votre panier</h5>";
         var index = 1;
         for (var x in panier) {
-            panierString += index + ". " + panier[x].name + " : " + panier[x].quantity + '<br/>';
+            panierString += index + ". " + panier[x].name + " - "+ panier[x].formule + " : " + panier[x].quantity + '<br/>';
             index += 1;
         }
 

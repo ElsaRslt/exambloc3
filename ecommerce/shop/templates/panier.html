@@ -1,34 +1,39 @@
 {% extends 'base.html' %}
 
+
 {% block content %}
 <div class="container mt-4">
     <h2>Votre panier</h2>
-    <ul class="list-group">
+    <div class="row">
+        <div class="col-md-12">
+            <ul class="list-group" id="item-list"></ul>
+        </div>
+    </div>
 
 
-        {% for item_id, item_details in panier.items %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                {{ item_details.formule }} -{{ item_details.name}} - {{ item_details.price|floatformat:2 }} €
-                <span class="badge badge-primary badge-pill">{{ item_details.quantity }}</span>
-            </li>
+{% endblock %} 
 
-            
+{% block js %} 
 
-            <li class="list-group-item">
-                {{ item_details.formule }} - {{ item_details.price|floatformat:2 }} € x {{ item_details.quantity }}
-            </li>
-        {% endfor %}
-    </ul>
-</div>
+    <script type="text/javascript">
+        if (localStorage.getItem('panier')==null){
+            var panier = {};
+        }else{
+            panier = JSON.parse(localStorage.getItem('panier'));
+        }
 
-<h1>Votre Panier</h1>
-    <ul>
-        {% for item_id, item in panier.items %}
-            <li>
-                <strong>{{ item.name }}</strong> - {{ item.formule }} : {{ item.price }} € x {{ item.quantity }}
-            </li>
-        {% endfor %}
-    </ul>
-    <p>Total : {{ panier|length}} articles</p>
+        for (x in panier){
+            let nom = panier[x].name;
+            let quantite = panier[x].quantity;
+            let formule = panier[x].formule;
+            let itemsString = `<li class="list-group-item d-flex justify-content-between align-items-center">${nom} - ${formule}
+                <span class="badge badge-primary badge-pill">${quantite}</span>
+            </li>`;
+            $('#item-list').append(itemsString);
+        };
 
-{% endblock %}
+        
+
+    </script>
+
+{% endblock%}
