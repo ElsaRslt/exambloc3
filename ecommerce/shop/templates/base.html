@@ -72,6 +72,14 @@
         return total;
     }
 
+    // Fonction pour calculer le prix total du panier
+    function calculTotalPrix(panier) {
+        let totalPrix = 0;
+        for (let key in panier) {
+            totalPrix += panier[key].price * panier[key].quantity;
+        }
+        return totalPrix.toFixed(2); // garder deux décimales 
+    }
 
      // Mettre à jour le panier lors du chargement de la page
     document.addEventListener('DOMContentLoaded', function() {
@@ -136,7 +144,7 @@
         var panierString = "<h5>Votre panier</h5>";
         var index = 1;
         for (var x in panier) {
-            panierString += index + ". " + panier[x].name + " - "+ panier[x].formule + " : " + panier[x].quantity + '<br/>';
+            panierString += index + ". " + panier[x].name + " - "+ panier[x].formule + " : " + panier[x].quantity +'<br/>';
             index += 1;
         }
 
