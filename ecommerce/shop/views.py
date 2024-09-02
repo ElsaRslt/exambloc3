@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from .models import Evenement, Formule
 from django.db.models import Q  # Import de l'opérateur Q pour les requêtes complexes
 from django.core.paginator import Paginator
