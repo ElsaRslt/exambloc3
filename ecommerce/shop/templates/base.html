@@ -6,26 +6,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JO PARIS 2024</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 </head>
 <body>
     <div class="container">
         <div class="row">
             <div class="col-md-12">
                 <nav class="navbar navbar-expand-lg navbar-light bg-light">
-                    <a class="navbar-brand" href="#">SITE RESERVATION BILLET JO 2024</a>
+                    <a class="navbar-brand" href="{% url 'home'%}">SITE RESERVATION BILLET JO 2024</a>
                     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
                         <span class="navbar-toggler-icon"></span>
                     </button>
                     <div class="collapse navbar-collapse" id="navbarNavDropdown">
                         <ul class="navbar-nav">
                             <li class="nav-item active">
-                                <a class="nav-link" href="#">Acceuil <span class="sr-only">(current)</span></a>
+                                <a class="nav-link" href="{% url 'home'%}">Acceuil <span class="sr-only">(current)</span></a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="#">Evenements</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="#">Panier</a>
+
+                                <a id="shopping" href="{% url 'panier' %}" type="button" class="btn btn-secondary" data-trigger="hover" data-container="body" data-toggle="popover" data-placement="bottom" data-html="true" data-content="Votre panier">Panier(0)</a>
                             </li>
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -45,4 +50,128 @@
         {%block content%}{% endblock %}
     </div>
 </body>
-</html>
+
+{% block js %}
+
+<script type="text/javascript">
+
+    //on regarde si le panier est nul. si c'est le cas création d'un panier
+    if(localStorage.getItem('panier')==null){
+        var panier ={};
+    // si c'est pas le cas on ajoute     
+    }else{
+        panier = JSON.parse(localStorage.getItem('panier'));
+    }
+
+    // Fonction pour calculer le nombre total d'articles dans le panier
+    function nbTotalArticle(panier) {
+        let total = 0;
+        for (let key in panier) {
+            if (panier.hasOwnProperty(key)) {
+                total += panier[key].quantity;
+            }
+        }
+        return total;
+    }
+
+    // Fonction pour calculer le prix total du panier
+    function calculTotalPrix(panier) {
+        let totalPrix = 0;
+        for (let key in panier) {
+            totalPrix += panier[key].price * panier[key].quantity;
+        }
+        return totalPrix.toFixed(2); // garder deux décimales 
+    }
+
+     // Mettre à jour le panier lors du chargement de la page
+    document.addEventListener('DOMContentLoaded', function() {
+        let panier = JSON.parse(localStorage.getItem('panier')) || {};
+        let totalArticles = nbTotalArticle(panier);
+        document.getElementById("shopping").innerHTML = "Panier(" + totalArticles + ")";
+        console.log(totalArticles);
+
+    // Initialiser le popover avec le déclencheur 'hover'
+        $('#shopping').popover({
+            trigger: 'hover',
+            html:true,
+        });
+        updatePopover();
+    });
+
+    function updatePopover() {
+        let panier = JSON.parse(localStorage.getItem('panier')) || {};
+        let panierString = "<h5>Votre panier</h5><ul>";
+        for (let key in panier) {
+            if (panier.hasOwnProperty(key)) {
+                panierString += `<li>${panier[key].name} - ${panier[key].formule} : ${panier[key].quantity}</li>`;
+            }
+        }
+        panierString += "</ul>";
+        document.getElementById('shopping').setAttribute('data-content', panierString);
+    }
+
+        // Ajouter un écouteur d'événement pour le bouton Ajouter au panier (uniquement si présent sur la page)
+        document.addEventListener('DOMContentLoaded', function() {
+            let panier = JSON.parse(localStorage.getItem('panier')) || {};
+            
+            const addToCartButton = document.getElementById('add-to-cart-btn');
+            if (addToCartButton) {
+                addToCartButton.addEventListener('click', function(event) {
+                    event.preventDefault(); // pour ne pas recharger la page et voir le debug en console
+                    console.log("ajouter");
+
+                    var item_id = this.getAttribute('data-item-id');
+                    var item_name = document.querySelector(".titre_ev").textContent.trim(); // avoir le nom de l'evenement
+                    var selectElement = document.querySelector("select[name='formule']");
+                    var item_formule = selectElement.options[selectElement.selectedIndex].text; // obtenir le texte (nom de la formule) de la sélection
+                    
+                    console.log(item_id, item_name,item_formule);
+
+                    if (panier[item_id + '_' + item_formule] !== undefined) { 
+                        panier[item_id + '_' + item_formule].quantity += 1;
+                    } else {
+                        panier[item_id + '_' + item_formule] = { 
+                            name: item_name, 
+                            formule: item_formule, // Nom de la formule
+                            quantity: 1
+                        }; 
+                    }
+
+                    console.log(panier);
+
+                    localStorage.setItem('panier', JSON.stringify(panier)); // Récupération du panier depuis localStorage au chargement de la page
+
+                    // Pour afficher dans le panier dans la navbar le nombre total d'articles ajoutés au panier 
+                    let totalArticles = nbTotalArticle(panier);
+                    document.getElementById("shopping").innerHTML = "Panier(" + totalArticles + ")";
+
+                    // Mettre à jour le contenu du popover
+                    updatePopover();
+                    //$('[data-toggle="popover"]').popover('update');
+                });
+            }
+        });
+        
+    //AfficherListe(panier)
+    // recuperation du nom des produits cliqués pour les afficher dans le popover//
+    function AfficherListe(panier) {
+        var panierString = "<h5>Votre panier</h5>";
+        var index = 1;
+        for (var x in panier) {
+            panierString += index + ". " + panier[x].name + " - "+ panier[x].formule + " : " + panier[x].quantity +'<br/>';
+            index += 1;
+        }
+
+        //rajouter un bouton dans le popover pour voir le panier
+        // panierString += "<a href ='/panier' class='btn btn-primary'>Panier</a>"
+        
+    //affichage du popover quand on clique sur le panier//
+       // $('[data-toggle="popover"]').popover();
+    // change le contenu du texte du popover//
+        document.getElementById('shopping').setAttribute('data-content', panierString);
+    };
+
+    </script>
+
+{% endblock %}
+</html>"
