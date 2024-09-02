@@ -28,7 +28,7 @@ SECRET_KEY = 'django-insecure-!mw_y!iohn!-dkl=8-+lr25q2dk%uj-^cly6j(gy%-j28zq97u
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG =  True #False pour la mise en prod 
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['https://jo2024shop-a568773133ec.herokuapp.com/', '127.0.0.1']
 
 
 # Application definition
@@ -127,13 +127,13 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
-""" STORAGES = {
+STORAGES = {
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
-} """
+}
 
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+#STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
