@@ -19,10 +19,14 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
+from shop import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('shop.urls')) #affiche la page index
+    path('', views.index, name='index'),  # La page d'accueil
+    path('panier/', views.panier, name='panier'),  # Ajouter une route pour le panier
+    path('evenement/<int:myid>/', views.detail, name='detail'),  # Ajouter une route pour le détail de l'événement
+    path('shop/', include('shop.urls')),
 ]
 
 if settings.DEBUG:
