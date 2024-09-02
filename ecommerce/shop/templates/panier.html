@@ -2,13 +2,165 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h2>Votre panier</h2>
-    <ul class="list-group">
-        {% for item_id, item_details in panier.items %}
-            <li class="list-group-item">
-                {{ item_details.formule }} - {{ item_details.price|floatformat:2 }} € x {{ item_details.quantity }}
-            </li>
-        {% endfor %}
-    </ul>
+    <h2>Votre Panier</h2>
+    <div class="row">
+        <!-- Colonne principale pour afficher les articles du panier -->
+        <div class="col-md-8">
+            <table class="table table-bordered">
+                <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">Produit</th>
+                        <th scope="col">Formule</th>
+                        <th scope="col">Prix Unitaire</th>
+                        <th scope="col">Quantité</th>
+                        <th scope="col">Total</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="item-list">
+                    <!-- Liste des articles du panier, mise à jour via le JS -->
+                </tbody>
+            </table>
+        </div>
+        <!-- Colonne pour afficher le résumé de la commande -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Votre commande</h5>
+                    <p class="card-text">Nombre d'articles : <span id="total-articles">0</span></p>
+                    <p class="card-text">Total : <span id="total-price">0.00</span> €</p>
+                    <button class="btn btn-primary" id="checkout-btn">Procéder au paiement</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+{% endblock %}
+
+{% block js %}
+<script type="text/javascript">
+
+    // Fonction pour mettre à jour le localStorage avec le panier actuel
+    function updateLocalStorage(panier) {
+        localStorage.setItem('panier', JSON.stringify(panier));
+    }
+
+    // Fonction pour mettre à jour le popover dans la navbar
+    function updatePopover() {
+        let panier = JSON.parse(localStorage.getItem('panier')) || {};
+        let panierString = "<h5>Votre panier</h5><ul>";
+        for (let key in panier) {
+            if (panier.hasOwnProperty(key)) {
+                panierString += `<li>${panier[key].name} - ${panier[key].formule} : ${panier[key].quantity}</li>`;
+            }
+        }
+        panierString += "</ul>";
+        document.getElementById('shopping').setAttribute('data-content', panierString);
+    }
+
+    // Fonction pour mettre à jour les totaux dans la page du panier
+    function updateTotals() {
+        let panier = JSON.parse(localStorage.getItem('panier')) || {};
+        let totalArticles = 0;
+        let totalPrix = 0;
+
+        $('#item-list').empty(); // Vide la liste des articles avant la mise à jour
+
+        // Parcourir chaque élément du panier et ajouter des lignes dans le tableau
+        for (let key in panier) {
+            if (panier.hasOwnProperty(key)) {
+                let item = panier[key];
+                let nom = item.name;
+                let quantite = parseInt(item.quantity); // Convertir en nombre
+                let formule = item.formule;
+                let prixFormule = parseFloat(formule.split(' - ')[1].replace('€', '').trim()); // Extraire le prix
+
+                // Vérifier si le prix est valide
+                if (!isNaN(prixFormule)) {
+                    let itemsString = `
+                        <tr data-item-id="${key}">
+                            <td>${nom}</td>
+                            <td>${formule}</td>
+                            <td>${prixFormule.toFixed(2)} €</td>
+                            <td>
+                                <input type="number" class="form-control quantity" data-item-id="${key}" value="${quantite}" min="1">
+                            </td>
+                            <td class="item-total">${(prixFormule * quantite).toFixed(2)} €</td>
+                            <td>
+                                <button class="btn btn-danger btn-sm remove-item" data-item-id="${key}">Supprimer</button>
+                            </td>
+                        </tr>
+                    `;
+                    $('#item-list').append(itemsString);
+                    
+                    // Calculer les totaux
+                    totalArticles += quantite;
+                    totalPrix += prixFormule * quantite;
+                } else {
+                    console.error(`Le prix pour l'article ${nom} est invalide : ${formule}`);
+                }
+            }
+        }
+
+        // Mettre à jour les totaux affichés sur la page
+        $('#total-articles').text(totalArticles);
+        $('#total-price').text(totalPrix.toFixed(2));
+        updateNavbarItemCount(); // Mettre à jour le nombre d'articles dans la navbar
+    }
+
+    // Fonction pour mettre à jour le nombre d'articles dans la navbar
+    function updateNavbarItemCount() {
+        let panier = JSON.parse(localStorage.getItem('panier')) || {};
+        let totalArticles = 0;
+        for (let key in panier) {
+            if (panier.hasOwnProperty(key)) {
+                totalArticles += parseInt(panier[key].quantity); // Convertir en nombre
+            }
+        }
+        document.getElementById("shopping").innerHTML = `Panier (${totalArticles})`;
+    }
+
+    // Vérifier si le panier existe dans le localStorage, sinon initialiser un panier vide
+    if (localStorage.getItem('panier') == null) {
+        var panier = {};
+    } else {
+        panier = JSON.parse(localStorage.getItem('panier'));
+    }
+
+    // Initialiser la page du panier
+    updateTotals();
+    updatePopover();
+
+    // Événement pour modifier la quantité d'un article
+    $('#item-list').on('change', '.quantity', function() {
+        let itemId = $(this).data('item-id');
+        let newQuantity = parseInt($(this).val()); // Convertir en nombre
+        let itemPrice = parseFloat($(`tr[data-item-id="${itemId}"]`).find('td:eq(2)').text().replace(' €', ''));
+        let panier = JSON.parse(localStorage.getItem('panier')) || {};
+        
+        panier[itemId].quantity = newQuantity;
+        updateLocalStorage(panier);
+
+        let newTotal = itemPrice * newQuantity;
+        $(`tr[data-item-id="${itemId}"]`).find('.item-total').text(newTotal.toFixed(2) + ' €');
+
+        // Mettre à jour les totaux et le popover
+        updateTotals();
+        updatePopover();
+    });
+
+    // Événement pour supprimer un article du panier
+    $('#item-list').on('click', '.remove-item', function() {
+        let itemId = $(this).data('item-id');
+        let panier = JSON.parse(localStorage.getItem('panier')) || {};
+
+        delete panier[itemId];
+        updateLocalStorage(panier);
+
+        $(this).closest('tr').remove();
+        // Mettre à jour les totaux et le popover
+        updateTotals();
+        updatePopover();
+    });
+</script>
 {% endblock %}

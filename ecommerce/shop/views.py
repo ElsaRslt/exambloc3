@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from .models import Evenement, Formule
 from django.db.models import Q  # Import de l'opérateur Q pour les requêtes complexes
 from django.core.paginator import Paginator
@@ -15,6 +15,7 @@ def index(request):
             Q(title__icontains=items_name) |  # Recherche dans le titre de l'événement
             Q(category__name__icontains=items_name)  # Recherche dans le nom de la catégorie (discipline)
         )
+        
     #mise en place de la pagination    
     paginator = Paginator( evenement_object,4) # on veut 4 evenement par page
     page = request.GET.get('page')
@@ -29,6 +30,7 @@ def detail(request, myid):
     formules_with_prices = [
         {
             'id': formule.id,
+            'name': evenement_object.title,
             'formule': formule.formule,
             'price': evenement_object.base_price * formule.price_multiplier
         }
@@ -38,15 +40,18 @@ def detail(request, myid):
     if request.method == 'POST':
         formule_id = request.POST.get('formule')
         formule = get_object_or_404(Formule, id=formule_id)
+        formule_name = formule.formule
         panier = request.session.get('panier', {})
-        if myid not in panier:
-            panier[myid] = {
-                'formule': formule.formule,
+        panier_key = f"{myid}_{formule_name}"
+        if panier_key not in panier:
+            panier[panier_key] = {
+                'name': evenement_object.title,
+                'formule': formule_name,
                 'price': evenement_object.base_price * formule.price_multiplier,
                 'quantity': 1
             }
         else:
-            panier[myid]['quantity'] += 1
+            panier[panier_key]['quantity'] += 1
         request.session['panier'] = panier
 
     return render(request, 'detail.html', {
