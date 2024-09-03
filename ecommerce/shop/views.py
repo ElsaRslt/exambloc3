@@ -74,9 +74,9 @@ def panier(request):
 def inscription(request):
     return render(request, 'inscription.html') """
 
-# Fonction pour afficher la page de connexion
+""" # Fonction pour afficher la page de connexion
 def connexion(request):
-    return render(request, 'connexion.html')
+    return render(request, 'connexion.html') """
 
 #formulaire pour l'inscription 
 def inscription(request):
@@ -88,3 +88,18 @@ def inscription(request):
     else:
         form = CustomUserCreationForm()
     return render(request, 'inscription.html', {'form': form})
+
+#connexion à son espace 
+def connexion(request):
+    if request.method == 'POST':
+        username = request.POST['username'] #récuperation du username avec methode post
+        password = request.POST['password'] #récuperation du mdp avec methode post
+        user = authenticate(request, username=username, password=password) # vérification que tout colle avec tout 
+        if user is not None: # si ok connexion
+            login(request, user)
+            return redirect('acceuil')
+        else:
+            messages.error(request, 'Nom d\'utilisateur ou mot de passe incorrect.') # si pas ok adieu 
+    return render(request, 'connexion.html')
+
+    
