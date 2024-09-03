@@ -36,3 +36,11 @@ class Evenement (models.Model):
         ordering = ['-date_added']
     def __str__(self):
         return self.title
+    
+    
+# création table utilisateur pour inscription et connexion 
+
+class Utilisateur(models.Model):
+    nom= models.CharField(max_length=50)
+    mot_de_passe= models.CharField(max_length=50)
+    
