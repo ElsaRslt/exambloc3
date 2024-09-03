@@ -64,3 +64,11 @@ def detail(request, myid):
 def panier(request):
     panier = request.session.get('panier', {})
     return render(request, 'panier.html', {'panier': panier})
+
+# Fonction pour afficher la page d'inscription
+def inscription(request):
+    return render(request, 'inscription.html')
+
+# Fonction pour afficher la page de connexion
+def connexion(request):
+    return render(request, 'connexion.html')

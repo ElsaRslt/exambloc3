@@ -26,7 +26,10 @@
                                 <a class="nav-link" href="{% url 'home'%}">Acceuil <span class="sr-only">(current)</span></a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="#">Evenements</a>
+                                <a class="nav-link" href="{% url 'connexion'%}">Connexion</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'inscription'%}">Inscription</a>
                             </li>
                             <li class="nav-item">
                                 <a id="shopping" href="{% url 'panier' %}" type="button" class="btn btn-secondary" data-trigger="hover" data-container="body" data-toggle="popover" data-placement="bottom" data-html="true" data-content="Votre panier">Panier(0)</a>

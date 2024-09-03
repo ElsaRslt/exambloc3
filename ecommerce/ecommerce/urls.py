@@ -19,7 +19,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
-from shop import views
+from shop import views 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -27,6 +27,8 @@ urlpatterns = [
     path('panier/', views.panier, name='panier'),  # Ajouter une route pour le panier
     path('evenement/<int:myid>/', views.detail, name='detail'),  # Ajouter une route pour le détail de l'événement
     path('shop/', include('shop.urls')),
+    path('inscription/', views.inscription, name='inscription'),# Ajouter une route pour la page d'inscription
+    path('connexion/', views.connexion, name='connexion'),# Ajouter une route pour la page d'inscription
 ]
 
 if settings.DEBUG:
