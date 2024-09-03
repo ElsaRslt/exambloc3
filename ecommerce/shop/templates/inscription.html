@@ -1,5 +1,23 @@
 {% extends 'base.html' %}
 
-{% comment %} {%block content%}
+{%block content%}
 
-{% endfor %} {% endcomment %}
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card card-custom">
+                    <div class="card-body">
+                        <h1 class="text-center mb-4">Inscription</h1>
+                        <form method="post" action="{% url 'inscription' %}">
+                            {% csrf_token %}
+                            {{ form.as_p }}
+                            <button type="submit" class="btn btn-custom btn-block">S'inscrire</button>
+                        </form>
+                        <p class="text-center mt-3">Déjà inscrit ? <a href="{% url 'connexion' %}" class="link-custom">Se connecter</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

@@ -28,7 +28,7 @@ urlpatterns = [
     path('evenement/<int:myid>/', views.detail, name='detail'),  # Ajouter une route pour le détail de l'événement
     path('shop/', include('shop.urls')),
     path('inscription/', views.inscription, name='inscription'),# Ajouter une route pour la page d'inscription
-    path('connexion/', views.connexion, name='connexion'),# Ajouter une route pour la page d'inscription
+    path('connexion/', views.connexion, name='connexion'),# Ajouter une route pour la page de connexion
 ]
 
 if settings.DEBUG:
