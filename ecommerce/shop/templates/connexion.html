@@ -16,7 +16,7 @@
 
             <form method="post" action="{% url 'connexion' %}">
                 {% csrf_token %}
-                <label for="username">Nom d'utilisateur</label>
+                <label for="username">Email</label>
                 <input type="text" name="username" required>
                 <label for="password">Mot de passe</label>
                 <input type="password" name="password" required>

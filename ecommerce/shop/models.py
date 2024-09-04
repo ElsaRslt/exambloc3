@@ -1,4 +1,5 @@
 from django.db import models
+import uuid
 
 #création table des disciplines
 class Discipline (models.Model):
@@ -41,5 +42,12 @@ class Evenement (models.Model):
 # création table utilisateur pour inscription et connexion 
 class Utilisateur(models.Model):
     nom = models.CharField(max_length=50)
-    mot_de_passe= models.CharField(max_length=50)
+    prenom = models.CharField(max_length=50)
+    Email = models.EmailField(unique=True)
+    mot_de_passe = models.CharField(max_length=50)
+    cle_securite = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    USERNAME_FIELD = 'Email'
+    
+    def __str__(self):
+        return f"{self.nom} {self.prenom}"
     
