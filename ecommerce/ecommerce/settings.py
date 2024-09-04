@@ -62,8 +62,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'jo2024',
-        'USER': 'root',
-        'PASSWORD': 'root',
+        'USER': 'elsa',
+        'PASSWORD': 'azerty',
         'HOST': '127.0.0.1',
         'PORT': '3306',
     },
@@ -110,3 +110,5 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Activate Django-Heroku.
 django_heroku.settings(locals())
+
+AUTH_USER_MODEL = 'shop.Utilisateur'

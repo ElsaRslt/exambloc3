@@ -1,5 +1,6 @@
 from django.db import models
 import uuid
+from django.contrib.auth.models import AbstractUser, Group, Permission # pour avoir les fonctionnalité Django de la gestion utilisateur
 
 #création table des disciplines
 class Discipline (models.Model):
@@ -40,14 +41,26 @@ class Evenement (models.Model):
     
     
 # création table utilisateur pour inscription et connexion 
-class Utilisateur(models.Model):
+class Utilisateur(AbstractUser):
     nom = models.CharField(max_length=50)
     prenom = models.CharField(max_length=50)
     Email = models.EmailField(unique=True)
-    mot_de_passe = models.CharField(max_length=50)
     cle_securite = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
-    USERNAME_FIELD = 'Email'
     
+    USERNAME_FIELD = 'Email'
+    REQUIRED_FIELDS = ['nom', 'prenom']
+
+    groups = models.ManyToManyField(
+        Group,
+        related_name='custom_user_set',
+        blank=True,
+    )
+    user_permissions = models.ManyToManyField(
+        Permission,
+        related_name='custom_user_permissions_set',
+        blank=True,
+    )
+
     def __str__(self):
         return f"{self.nom} {self.prenom}"
     

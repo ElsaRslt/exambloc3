@@ -8,16 +8,7 @@ class CustomUserCreationForm(UserCreationForm):
     nom = forms.CharField(label="Nom", max_length=50)
     prenom = forms.CharField(label="Prénom", max_length=50)
     Email = forms.EmailField(label="Email")
-    password1 = forms.CharField(
-        label="Mot de passe",
-        strip=False,
-        widget=forms.PasswordInput(attrs={'autocomplete': 'new-password'}),
-    )
-    password2 = forms.CharField(
-        label="Confirmation du mot de passe",
-        widget=forms.PasswordInput(attrs={'autocomplete': 'new-password'}),
-        strip=False,
-    )
+    
     class Meta:
         model = Utilisateur
         fields = ['nom', 'prenom', 'Email', 'password1', 'password2']
