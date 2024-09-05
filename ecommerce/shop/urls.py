@@ -21,8 +21,8 @@ urlpatterns = [
     # URL pour se deco
     path('deconnexion/', views.deconnexion, name='deconnexion'),
     
-	# URL pour demander la réinitialisation du mot de passe
-    path('mot-de-passe-oublie/', auth_views.PasswordResetView.as_view(template_name='mot_de_passe_oublie.html'), name='password_reset'),
+	# # URL pour demander la réinitialisation du mot de passe
+    # path('mot-de-passe-oublie/', auth_views.PasswordResetView.as_view(template_name='mot_de_passe_oublie.html'), name='password_reset'),
     
     # URL pour confirmer l'envoi de l'email
     path('mot-de-passe-oublie/envoye/', auth_views.PasswordResetDoneView.as_view(template_name='mot_de_passe_envoye.html'), name='password_reset_done'),
@@ -32,6 +32,9 @@ urlpatterns = [
     
     # URL pour confirmer que le mot de passe a bien été réinitialisé
     path('reinitialiser/complet/', auth_views.PasswordResetCompleteView.as_view(template_name='reinitialisation_complete.html'), name='password_reset_complete'),
+    
+    #personnalisation du mail de réinitialisation du MDP 
+    path('mot-de-passe-oublie/',auth_views.PasswordResetView.as_view(template_name='mot_de_passe_oublie.html', email_template_name='password_reset_email.html'),name='password_reset'),
 ]
     
 

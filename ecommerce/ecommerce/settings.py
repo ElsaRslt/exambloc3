@@ -4,6 +4,7 @@ import django_heroku
 import dj_database_url
 from pathlib import Path
 
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 TEMPLATES_DIRS = os.path.join(BASE_DIR, 'templates')
@@ -122,4 +123,3 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'joparis2024studi@gmail.com'  
 EMAIL_HOST_PASSWORD = 's o v i x j x i x x d s j p d l'  
 DEFAULT_FROM_EMAIL = 'joparis2024studi@gmail.com' 
-
