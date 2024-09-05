@@ -2,6 +2,7 @@ from pathlib import Path
 import os
 import django_heroku
 import dj_database_url
+from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -112,3 +113,13 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 django_heroku.settings(locals())
 
 AUTH_USER_MODEL = 'shop.Utilisateur'
+
+# gestion des mails de recupérations MDP oubliés
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'joparis2024studi@gmail.com'  
+EMAIL_HOST_PASSWORD = 's o v i x j x i x x d s j p d l'  
+DEFAULT_FROM_EMAIL = 'joparis2024studi@gmail.com' 
+
