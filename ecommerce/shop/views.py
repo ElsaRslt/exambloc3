@@ -115,3 +115,9 @@ def home(request):
         'prenom': user.prenom,
         'nom': user.nom,
     })
+    
+    
+
+# Fonction pour afficher la page de des commandes
+def commandes(request):
+    return render(request, 'commandes.html')

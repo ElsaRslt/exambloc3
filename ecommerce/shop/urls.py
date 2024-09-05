@@ -1,5 +1,5 @@
 from django.urls import path, include
-from shop.views import index, detail, panier, inscription
+from shop.views import index, detail, panier, inscription, commandes
 from django.contrib.auth import views as auth_views
 from . import views
 
@@ -35,6 +35,9 @@ urlpatterns = [
     
     #personnalisation du mail de réinitialisation du MDP 
     path('mot-de-passe-oublie/',auth_views.PasswordResetView.as_view(template_name='mot_de_passe_oublie.html', email_template_name='password_reset_email.html'),name='password_reset'),
+    
+    # URL pour la page commande
+    path('commandes/', commandes, name='commandes'),
 ]
     
 
