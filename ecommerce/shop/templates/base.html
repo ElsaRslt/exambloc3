@@ -23,7 +23,7 @@
                     <div class="collapse navbar-collapse" id="navbarNavDropdown">
                         <ul class="navbar-nav">
                             <li class="nav-item active">
-                                <a class="nav-link" href="{% url 'home'%}">Acceuil <span class="sr-only">(current)</span></a>
+                                <a class="nav-link" href="{% url 'home'%}">Accueil <span class="sr-only">(current)</span></a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="{% url 'connexion'%}">Connexion</a>
@@ -36,7 +36,7 @@
                             </li>
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            Catégorie (Sport)
+                                    Catégorie (Sport)
                                 </a>
                                 <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
                                     <a class="dropdown-item" href="#">Action</a>
@@ -44,14 +44,20 @@
                                     <a class="dropdown-item" href="#">Something else here</a>
                                 </div>
                             </li>
-                            {% comment %} <li class="nav-item">Bienvenue, {{user.username}}</li> //modifier pour cque ce soit le mon de la personne qui est co {% endcomment %}
-                            {% comment %} <button><a href="{% url 'deconnexion' %}">Déconnexion</a></button> // modifier pour que ca affiche que quand on est co {% endcomment %}
+                            {% if user.is_authenticated %}
+                                <li class="nav-item">
+                                    <span class="navbar-text">Bonjour, {{ user.prenom }} {{ user.nom }}!</span>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{% url 'deconnexion' %}">Déconnexion</a>
+                                </li>
+                            {% endif %}
                         </ul>
                     </div>
                 </nav>
             </div>
         </div>
-        {%block content%}{% endblock %}
+        {% block content %}{% endblock %}
     </div>
 </body>
 

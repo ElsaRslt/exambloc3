@@ -97,12 +97,21 @@ def connexion(request):
         user = authenticate(request, username=username, password=password) # vérification que tout colle avec tout 
         if user is not None: # si ok connexion
             login(request, user)
-            return redirect('acceuil')
+            return redirect('home')
         else:
             messages.error(request, 'Nom d\'utilisateur ou mot de passe incorrect.') # si pas ok adieu 
     return render(request, 'connexion.html')
 
 # #deconnexion de son compte
-# def deconnexion(request):
-#     logout(request)
-#     return redirect('connexion')
+def deconnexion(request):
+    logout(request)
+    return redirect('home')  # Redirection vers la page d'accueil après déconnexion
+
+#recuperation nom et prenom pour espace perso 
+@login_required
+def home(request):
+    user = request.user
+    return render(request, 'home.html', {
+        'prenom': user.prenom,
+        'nom': user.nom,
+    })

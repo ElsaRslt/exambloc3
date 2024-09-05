@@ -8,5 +8,6 @@ urlpatterns = [
     path('panier/', panier, name='panier'),
     path('inscription/', views.inscription, name='inscription'),
     path('connexion/', views.connexion, name='connexion'),
+    path('deconnexion/', views.deconnexion, name='deconnexion')
 ] 
 
