@@ -1,0 +1,7 @@
+<form method="post">
+    {% csrf_token %}
+    <h2>Réinitialiser votre mot de passe</h2>
+    {{ form.new_password1 }}
+    {{ form.new_password2 }}
+    <button type="submit">Réinitialiser le mot de passe</button>
+</form>

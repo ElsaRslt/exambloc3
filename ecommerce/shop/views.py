@@ -3,6 +3,11 @@ from .models import Evenement, Formule
 from django.db.models import Q  # Import de l'opérateur Q pour les requêtes complexes
 from django.core.paginator import Paginator
 from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.forms import UserCreationForm 
+from .form import InscriptionForm
+from django.contrib.auth import login, authenticate, logout
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 
 # Fonction qui va permettre d'afficher le fichier index et les images
 def index(request):
@@ -65,10 +70,54 @@ def panier(request):
     panier = request.session.get('panier', {})
     return render(request, 'panier.html', {'panier': panier})
 
-# Fonction pour afficher la page d'inscription
+""" # Fonction pour afficher la page d'inscription
 def inscription(request):
-    return render(request, 'inscription.html')
+    return render(request, 'inscription.html') """
 
-# Fonction pour afficher la page de connexion
+""" # Fonction pour afficher la page de connexion
 def connexion(request):
+    return render(request, 'connexion.html') """
+
+# Formulaire d'inscription avec InscriptionForm
+def inscription(request):
+    if request.method == 'POST':
+        form = InscriptionForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('connexion')  # Redirection après la création du compte
+    else:
+        form = InscriptionForm()
+    return render(request, 'inscription.html', {'form': form})
+
+#connexion à son espace 
+def connexion(request):
+    if request.method == 'POST':
+        username = request.POST['username'] #récuperation du username avec methode post
+        password = request.POST['password'] #récuperation du mdp avec methode post
+        user = authenticate(request, username=username, password=password) # vérification que tout colle avec tout 
+        if user is not None: # si ok connexion
+            login(request, user)
+            return redirect('home')
+        else:
+            messages.error(request, 'Nom d\'utilisateur ou mot de passe incorrect.') # si pas ok adieu 
     return render(request, 'connexion.html')
+
+# #deconnexion de son compte
+def deconnexion(request):
+    logout(request)
+    return redirect('home')  # Redirection vers la page d'accueil après déconnexion
+
+#recuperation nom et prenom pour espace perso 
+@login_required
+def home(request):
+    user = request.user
+    return render(request, 'home.html', {
+        'prenom': user.prenom,
+        'nom': user.nom,
+    })
+    
+    
+
+# Fonction pour afficher la page de des commandes
+def commandes(request):
+    return render(request, 'commandes.html')

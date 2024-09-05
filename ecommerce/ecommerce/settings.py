@@ -2,6 +2,8 @@ from pathlib import Path
 import os
 import django_heroku
 import dj_database_url
+from pathlib import Path
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -23,7 +25,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'shop'
+    'shop',
 ]
 
 MIDDLEWARE = [
@@ -58,19 +60,21 @@ TEMPLATES = [
 WSGI_APPLICATION = 'ecommerce.wsgi.application'
 
 # Database configuration
-if DEBUG:
-    # Local development with SQLite
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'jo2024',
+        'USER': 'elsa',
+        'PASSWORD': 'azerty',
+        'HOST': '127.0.0.1',
+        'PORT': '3306',
+    },
+    'sqlite': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
-else:
-    # Production configuration with PostgreSQL
-    DATABASES = {
-        'default': dj_database_url.config(default='postgres://localhost')
-    }
+}
+
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -89,8 +93,8 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 # Internationalization
-LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'UTC'
+LANGUAGE_CODE = 'fr'
+TIME_ZONE = 'Europe/Paris'
 USE_I18N = True
 USE_TZ = True
 
@@ -108,3 +112,14 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Activate Django-Heroku.
 django_heroku.settings(locals())
+
+AUTH_USER_MODEL = 'shop.Utilisateur'
+
+# gestion des mails de recupérations MDP oubliés
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'joparis2024studi@gmail.com'  
+EMAIL_HOST_PASSWORD = 's o v i x j x i x x d s j p d l'  
+DEFAULT_FROM_EMAIL = 'joparis2024studi@gmail.com' 

@@ -1,1 +1,30 @@
 {% extends 'base.html' %}
+
+{%block content%}
+
+    <div class="container">
+        <div class="form">
+            <h1>Connexion</h1>
+
+            {% if messages %}
+            <div class="error-messages">
+                {% for message in messages %}
+                <p class="error">{{ message }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <form method="post" action="{% url 'connexion' %}">
+                {% csrf_token %}
+                <label for="username">Email</label>
+                <input type="text" name="username" required>
+                <label for="password">Mot de passe</label>
+                <input type="password" name="password" required>
+                <button type="submit">Se connecter</button>
+            </form>
+            <p class="link">Pas encore inscrit ? <a href="{% url 'inscription' %}">S'inscrire</a></p>
+            <p class="link">Mot de passe oublié? <a href="{% url 'password_reset' %}">Mot de passe oublié ?</a></p>
+        </div>
+    </div>
+
+{% endblock %}

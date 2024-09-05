@@ -1,5 +1,31 @@
 {% extends 'base.html' %}
 
-{% comment %} {%block content%}
-
-{% endfor %} {% endcomment %}
+{% block content %}
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card card-custom">
+                    <div class="card-body">
+                        <h1 class="text-center mb-4">Inscription</h1>
+                        <form method="post" action="{% url 'inscription' %}">
+                            {% csrf_token %}
+                            {% for field in form %}
+                                <div class="form-group">
+                                    {{ field.label_tag }}
+                                    {{ field }}
+                                    {% if field.errors %}
+                                        <div class="alert alert-danger mt-2">
+                                            {{ field.errors|striptags }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                            <button type="submit" class="btn btn-custom btn-block">S'inscrire</button>
+                        </form>
+                        <p class="text-center mt-3">Déjà inscrit ? <a href="{% url 'connexion' %}" class="link-custom">Se connecter</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
