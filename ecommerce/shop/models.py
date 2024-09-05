@@ -46,6 +46,7 @@ class Utilisateur(AbstractUser):
     prenom = models.CharField(max_length=50)
     email = models.EmailField(unique=True)
     cle_securite = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    username = models.CharField(max_length=150, blank=True, null=True)
     
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['nom', 'prenom']
