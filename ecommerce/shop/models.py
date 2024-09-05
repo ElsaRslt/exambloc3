@@ -44,10 +44,10 @@ class Evenement (models.Model):
 class Utilisateur(AbstractUser):
     nom = models.CharField(max_length=50)
     prenom = models.CharField(max_length=50)
-    Email = models.EmailField(unique=True)
+    email = models.EmailField(unique=True)
     cle_securite = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     
-    USERNAME_FIELD = 'Email'
+    USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['nom', 'prenom']
 
     groups = models.ManyToManyField(

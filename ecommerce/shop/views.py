@@ -4,7 +4,7 @@ from django.db.models import Q  # Import de l'opérateur Q pour les requêtes co
 from django.core.paginator import Paginator
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.forms import UserCreationForm 
-from .form import CustomUserCreationForm
+from .form import InscriptionForm
 from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -78,15 +78,15 @@ def inscription(request):
 def connexion(request):
     return render(request, 'connexion.html') """
 
-#formulaire pour l'inscription 
+# Formulaire d'inscription avec InscriptionForm
 def inscription(request):
     if request.method == 'POST':
-        form = CustomUserCreationForm(request.POST)
+        form = InscriptionForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('connexion')
+            return redirect('connexion')  # Redirection après la création du compte
     else:
-        form = CustomUserCreationForm()
+        form = InscriptionForm()
     return render(request, 'inscription.html', {'form': form})
 
 #connexion à son espace 
