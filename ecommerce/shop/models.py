@@ -1,6 +1,8 @@
 from django.db import models
 import uuid
 from django.contrib.auth.models import AbstractUser, Group, Permission # pour avoir les fonctionnalité Django de la gestion utilisateur
+from django.conf import settings
+
 
 #création table des disciplines
 class Discipline (models.Model):
@@ -64,3 +66,13 @@ class Utilisateur(AbstractUser):
 
     def __str__(self):
         return f"{self.nom} {self.prenom}"
+    
+# Création d'une classe pour enregistrement des commandes
+class Commande(models.Model):
+    user = models.ForeignKey(Utilisateur, on_delete=models.CASCADE)
+    panier = models.TextField()  # Pour stocker le panier en format JSON
+    prix_total = models.DecimalField(max_digits=10, decimal_places=2)
+    date_commande = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Commande {self.id} - {self.user.username}"

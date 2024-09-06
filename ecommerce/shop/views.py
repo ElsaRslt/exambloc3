@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from .models import Evenement, Formule
+from .models import Evenement, Formule, Commande
 from django.db.models import Q  # Import de l'opérateur Q pour les requêtes complexes
 from django.core.paginator import Paginator
 from django.shortcuts import render, get_object_or_404
@@ -8,6 +8,7 @@ from .form import InscriptionForm
 from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+import json
 
 # Fonction qui va permettre d'afficher le fichier index et les images
 def index(request):
@@ -116,8 +117,24 @@ def home(request):
         'nom': user.nom,
     })
     
-    
 
-# Fonction pour afficher la page de des commandes
+# Fonction pour afficher la page des commandes
 def commandes(request):
     return render(request, 'commandes.html')
+
+@login_required
+def proceder_au_paiement(request):
+    if request.method == 'POST':
+        panier_data = request.POST.get('panier_data')
+        total_prix = request.POST.get('total_prix')
+
+        # Traitez les données du panier et le prix total ici
+
+        # Redirigez vers une page de confirmation
+        return render(request, 'paiement.html', {'total_prix': total_prix})
+    
+    # Si la méthode n'est pas POST, redirigez vers la page d'accueil ou autre
+    return redirect('home')
+
+def paiement(request):
+    return render(request, 'paiement.html')

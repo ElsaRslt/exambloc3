@@ -1,8 +1,7 @@
 from django.urls import path, include
-from shop.views import index, detail, panier, inscription, commandes
+from shop.views import index, detail, panier, inscription, commandes, paiement
 from django.contrib.auth import views as auth_views
 from . import views
-
 
 urlpatterns = [
     path('', index, name ='home'), 
@@ -21,6 +20,10 @@ urlpatterns = [
     # URL pour se deco
     path('deconnexion/', views.deconnexion, name='deconnexion'),
     
+
+    # si le client n'est pas connecté
+    path('proceder-au-paiement/', views.proceder_au_paiement, name='proceder_au_paiement'),
+    
 	# # URL pour demander la réinitialisation du mot de passe
     # path('mot-de-passe-oublie/', auth_views.PasswordResetView.as_view(template_name='mot_de_passe_oublie.html'), name='password_reset'),
     
@@ -38,6 +41,9 @@ urlpatterns = [
     
     # URL pour la page commande
     path('commandes/', commandes, name='commandes'),
-]
     
+    # URL pour la page paiement
+    path('paiement/', paiement, name='paiement'),
+]
 
+    

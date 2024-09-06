@@ -29,7 +29,12 @@
                     <h5 class="card-title">Votre commande</h5>
                     <p class="card-text">Nombre d'articles : <span id="total-articles">0</span></p>
                     <p class="card-text">Total : <span id="total-price">0.00</span> €</p>
-                    <button class="btn btn-primary" id="checkout-btn">Procéder au paiement</button>
+                    <form method="post" action="{% url 'proceder_au_paiement' %}">
+                        {% csrf_token %}
+                        <input type="hidden" id="panier-data" name="panier_data">
+                        <input type="hidden" id="total-prix" name="total_prix">
+                        <button type="submit" class="btn btn-primary" id="checkout-btn">Procéder au paiement</button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -161,6 +166,25 @@
         // Mettre à jour les totaux et le popover
         updateTotals();
         updatePopover();
+    });
+
+// Quand on clique sur le bouton de paiement
+    $('#checkout-btn').on('click', function(e) {
+        e.preventDefault();  // Empêche le rechargement immédiat de la page
+        
+        let panier = JSON.parse(localStorage.getItem('panier')) || {};
+        let totalPrix = $('#total-price').text();  // Récupère le prix total
+
+        console.log('Le bouton payer a été cliqué');  // Ajoutez ceci pour déboguer
+
+        // Remplir les champs cachés avec les données du panier et le prix total
+        $('#panier-data').val(JSON.stringify(panier));
+        $('#total-prix').val(totalPrix);
+
+        console.log('Formulaire prêt à être soumis', panier, totalPrix);  // Débogage supplémentaire
+
+        // Soumettre le formulaire
+        $(this).closest('form').submit();
     });
 </script>
 {% endblock %}
