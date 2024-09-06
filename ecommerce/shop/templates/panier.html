@@ -29,11 +29,11 @@
                     <h5 class="card-title">Votre commande</h5>
                     <p class="card-text">Nombre d'articles : <span id="total-articles">0</span></p>
                     <p class="card-text">Total : <span id="total-price">0.00</span> €</p>
-                    <form method="post" action="{% url 'proceder_au_paiement' %}">
+                    <form id="checkout-form" action="{% url 'proceder_au_paiement' %}" method="post">
                         {% csrf_token %}
-                        <input type="hidden" id="panier-data" name="panier_data">
-                        <input type="hidden" id="total-prix" name="total_prix">
-                        <button type="submit" class="btn btn-primary" id="checkout-btn">Procéder au paiement</button>
+                        <input type="hidden" id="panier-data" name="panier_data" />
+                        <input type="hidden" id="total-prix" name="total_prix" />
+                        <button class="btn btn-primary" id="checkout-btn">Procéder au paiement</button>
                     </form>
                 </div>
             </div>

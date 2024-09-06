@@ -122,19 +122,29 @@ def home(request):
 def commandes(request):
     return render(request, 'commandes.html')
 
+# Fonction pour afficher la page du paiement
+def paiement(request):
+    return render(request, 'paiement.html')
+
 @login_required
 def proceder_au_paiement(request):
     if request.method == 'POST':
         panier_data = request.POST.get('panier_data')
         total_prix = request.POST.get('total_prix')
-
-        # Traitez les données du panier et le prix total ici
-
-        # Redirigez vers une page de confirmation
-        return render(request, 'paiement.html', {'total_prix': total_prix})
+        
+        if panier_data:
+            panier = json.loads(panier_data)
+            utilisateur = request.user
+            
+            # Crée une nouvelle commande
+            commande = Commande.objects.create(
+                user=utilisateur,
+                panier=panier_data,
+                prix_total=total_prix
+            )
+            
+            # Redirige vers la page de confirmation de paiement
+            return redirect('paiement')
     
-    # Si la méthode n'est pas POST, redirigez vers la page d'accueil ou autre
-    return redirect('home')
-
-def paiement(request):
-    return render(request, 'paiement.html')
+    # Redirige si la requête n'est pas POST
+    return redirect('panier')

@@ -1,15 +1,19 @@
 from django.urls import path, include
-from shop.views import index, detail, panier, inscription, commandes, paiement
+from shop import views 
 from django.contrib.auth import views as auth_views
-from . import views
+from django.urls import path
+from shop import views
+from django.contrib.auth import views as auth_views
+
+
 
 urlpatterns = [
-    path('', index, name ='home'), 
+    path('', views.index, name ='home'), 
     
-    path('<int:myid>/', detail, name='detail'),
+    path('<int:myid>/', views.detail, name='detail'),
     
     # URL pour le panier
-    path('panier/', panier, name='panier'),
+    path('panier/', views.panier, name='panier'),
     
     # URL pour s'inscrire
     path('inscription/', views.inscription, name='inscription'),
@@ -40,10 +44,10 @@ urlpatterns = [
     path('mot-de-passe-oublie/',auth_views.PasswordResetView.as_view(template_name='mot_de_passe_oublie.html', email_template_name='password_reset_email.html'),name='password_reset'),
     
     # URL pour la page commande
-    path('commandes/', commandes, name='commandes'),
+    path('commandes/', views.commandes, name='commandes'),
     
     # URL pour la page paiement
-    path('paiement/', paiement, name='paiement'),
+    path('paiement/', views.paiement, name='paiement'),
 ]
 
     

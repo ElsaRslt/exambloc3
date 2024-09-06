@@ -33,6 +33,7 @@ urlpatterns = [
     path('deconnexion/', views.deconnexion, name='deconnexion'),# Ajouter une route pour la deconnexion
     path('proceder-au-paiement/', views.proceder_au_paiement, name='proceder_au_paiement'),
     path('paiement/', views.paiement, name='paiement'),# URL pour la page paiement
+    path('commandes/', views.commandes, name='commandes'),# URL pour la page paiement
 ]
 
 if settings.DEBUG:
