@@ -29,11 +29,11 @@
     <script type= "text/javascript">
 
         // pour calculer le prix en fonction de la formule choisie 
-        document.getElementById('formule-select').addEventListener('change', function() {
-            var selectedOption = this.options[this.selectedIndex];
-            var price = parseFloat(selectedOption.getAttribute('data-price-multiplier'));
-            document.getElementById('event-price').textContent = price.toFixed(2) + ' €';
-        });
+    document.getElementById('formule-select').addEventListener('change', function() {
+        var selectedOption = this.options[this.selectedIndex];
+        var price = parseFloat(selectedOption.getAttribute('data-price-multiplier'));
+        document.getElementById('event-price').textContent = price.toFixed(2) + ' €';
+    });
 
     </script>
 

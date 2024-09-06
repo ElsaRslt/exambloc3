@@ -73,6 +73,7 @@ class Commande(models.Model):
     panier = models.TextField()  # Pour stocker le panier en format JSON
     prix_total = models.DecimalField(max_digits=10, decimal_places=2)
     date_commande = models.DateTimeField(auto_now_add=True)
+    cle_securite_commande = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
 
     def __str__(self):
         return f"Commande {self.id} - {self.user.username}"
