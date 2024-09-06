@@ -123,3 +123,5 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'joparis2024studi@gmail.com'  
 EMAIL_HOST_PASSWORD = 's o v i x j x i x x d s j p d l'  
 DEFAULT_FROM_EMAIL = 'joparis2024studi@gmail.com' 
+
+LOGIN_URL = '/connexion/'

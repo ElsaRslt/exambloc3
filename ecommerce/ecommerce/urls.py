@@ -20,6 +20,7 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
 from shop import views 
+from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -29,6 +30,10 @@ urlpatterns = [
     path('shop/', include('shop.urls')),
     path('inscription/', views.inscription, name='inscription'),# Ajouter une route pour la page d'inscription
     path('connexion/', views.connexion, name='connexion'),# Ajouter une route pour la page de connexion
+    path('deconnexion/', views.deconnexion, name='deconnexion'),# Ajouter une route pour la deconnexion
+    path('proceder-au-paiement/', views.proceder_au_paiement, name='proceder_au_paiement'),
+    path('paiement/', views.paiement, name='paiement'),# URL pour la page paiement
+    path('commandes/', views.commandes, name='commandes'),# URL pour la page paiement
 ]
 
 if settings.DEBUG:
