@@ -46,10 +46,10 @@ class Utilisateur(AbstractUser):
     prenom = models.CharField(max_length=50)
     email = models.EmailField(unique=True)
     cle_securite = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
-    username = models.CharField(max_length=150, blank=True, null=True)
-    
+    username = models.CharField(max_length=150, unique=True)  # Le username devient obligatoire et unique
+
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['nom', 'prenom']
+    REQUIRED_FIELDS = ['username', 'nom', 'prenom']  # username devient requis
 
     groups = models.ManyToManyField(
         Group,
@@ -64,4 +64,3 @@ class Utilisateur(AbstractUser):
 
     def __str__(self):
         return f"{self.nom} {self.prenom}"
-    
