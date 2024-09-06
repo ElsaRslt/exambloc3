@@ -1,7 +1,35 @@
 {% extends 'base.html' %}
 
-{%block content%}
+{% load custom_filters %}
 
-<h1>Vos Commandes</h1>
 
+{% block content %}
+<div class="container mt-4">
+    <h2>Suivi de vos commandes</h2>
+
+    {% if commandes %}
+        <table class="table table-bordered">
+            <thead class="thead-dark">
+                <tr>
+                    <th scope="col">Numéro de commande</th>
+                    <th scope="col">Date de la commande</th>
+                    <th scope="col">Événements</th>
+                    <th scope="col">Prix Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for commande in commandes %}
+                    <tr>
+                        <td>{{ commande.numero_commande }}</td>
+                        <td>{{ commande.date_commande|date:"d M Y H:i" }}</td>
+                        <td>{{ commande.panier|get_event_names }}</td> <!-- Affiche directement la liste des événements -->
+                        <td>{{ commande.prix_total }} €</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Vous n'avez encore passé aucune commande.</p>
+    {% endif %}
+</div>
 {% endblock %}

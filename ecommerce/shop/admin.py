@@ -20,7 +20,7 @@ class AdminFormule(admin.ModelAdmin):
     
 
 class CommandeAdmin(admin.ModelAdmin):
-    list_display = ('user_full_name', 'cle_securite_commande', 'prix_total', 'date_commande')
+    list_display = ('user_full_name', 'cle_securite_commande', 'numero_commande','prix_total', 'date_commande')
 
     def user_full_name(self, obj):
         return f"{obj.user.nom} {obj.user.prenom}"
