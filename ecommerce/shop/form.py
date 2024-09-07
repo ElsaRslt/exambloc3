@@ -9,7 +9,7 @@ class InscriptionForm(UserCreationForm):
         model = Utilisateur
         fields = ['nom', 'prenom', 'email', 'password1', 'password2']
         labels = {
-            'nom': 'Nom',
+            'nom':'Nom',
             'prenom': 'Prénom',
             'email': 'Email',
             'password1': 'Mot de passe',
