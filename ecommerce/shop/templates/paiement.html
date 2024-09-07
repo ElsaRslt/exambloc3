@@ -5,3 +5,15 @@
 <h1>merci pour votre commande bisous bisous</h1>
 
 {% endblock %}
+
+{% block js %}
+<script type="text/javascript">
+    // Fonction pour vider le panier du localStorage
+    function clearLocalStorage() {
+        localStorage.removeItem('panier');
+    }
+
+    // Appeler la fonction pour vider le panier
+    clearLocalStorage();
+</script>
+{% endblock %}

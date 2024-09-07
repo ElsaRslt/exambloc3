@@ -118,9 +118,10 @@ def home(request):
     })
     
 
-# Fonction pour afficher la page des commandes
+# Fonction pour afficher la page des commandes et les commandes dans la page commandes
 def commandes(request):
-    return render(request, 'commandes.html')
+    commandes = Commande.objects.filter(user=request.user)
+    return render(request, 'commandes.html', {'commandes': commandes})
 
 # Fonction pour afficher la page du paiement
 def paiement(request):

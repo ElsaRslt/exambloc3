@@ -1,5 +1,7 @@
 from django.db import models
 import uuid
+import random
+import string
 from django.contrib.auth.models import AbstractUser, Group, Permission # pour avoir les fonctionnalité Django de la gestion utilisateur
 from django.conf import settings
 
@@ -48,7 +50,7 @@ class Utilisateur(AbstractUser):
     prenom = models.CharField(max_length=50)
     email = models.EmailField(unique=True)
     cle_securite = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
-    username = models.CharField(max_length=150, unique=True)  # Le username devient obligatoire et unique
+    username = models.CharField(max_length=150, unique=False)  # Le username devient obligatoire et unique
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', 'nom', 'prenom']  # username devient requis
@@ -67,12 +69,24 @@ class Utilisateur(AbstractUser):
     def __str__(self):
         return f"{self.nom} {self.prenom}"
     
+
+# Fonction pour générer un numéro de commande unique
+def generate_order_number():
+    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+
 # Création d'une classe pour enregistrement des commandes
 class Commande(models.Model):
-    user = models.ForeignKey(Utilisateur, on_delete=models.CASCADE)
+    user = models.ForeignKey('Utilisateur', on_delete=models.CASCADE)
     panier = models.TextField()  # Pour stocker le panier en format JSON
     prix_total = models.DecimalField(max_digits=10, decimal_places=2)
     date_commande = models.DateTimeField(auto_now_add=True)
+    cle_securite_commande = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    numero_commande = models.CharField(max_length=6, unique=True, blank=True, editable=False)
+
+    def save(self, *args, **kwargs):
+        if not self.numero_commande:
+            self.numero_commande = generate_order_number()
+        super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"Commande {self.id} - {self.user.username}"
+        return f"Commande {self.numero_commande} - {self.user.username}"
