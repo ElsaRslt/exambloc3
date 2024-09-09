@@ -27,7 +27,7 @@
                         <td>{{ commande.prix_total }} €</td>
                         <td>
                             {% if commande.ebillet_path %}
-                                <a href="{{ commande.ebillet_path }}" class="btn btn-primary" download>Télécharger mon e-billet</a>
+                                <a href="{% url 'telecharger_ebillet' commande.id %}" class="btn btn-primary">Télécharger mon e-billet</a>
                             {% else %}
                                 <span>E-billet non disponible</span>
                             {% endif %}

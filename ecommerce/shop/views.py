@@ -14,6 +14,7 @@ from io import BytesIO
 from django.core.mail import EmailMessage
 from django.conf import settings
 import os
+from django.http import FileResponse, Http404
 
 # Fonction qui va permettre d'afficher le fichier index et les images
 def index(request):
@@ -139,6 +140,7 @@ def proceder_au_paiement(request):
         total_prix = request.POST.get('total_prix')
 
         if panier_data:
+            panier = json.loads(panier_data)
             utilisateur = request.user
 
             # Crée une nouvelle commande
@@ -148,13 +150,17 @@ def proceder_au_paiement(request):
                 prix_total=total_prix,
             )
 
-            # Générer le QR code et récupérer le buffer en mémoire
-            qr_buffer = generate_qr_code(utilisateur, commande)
+            # Générer le QR code et l'enregistrer comme e-billet
+            qr_code_path = generate_qr_code(utilisateur, commande)
 
-            # Envoyer l'e-mail de confirmation
-            send_confirmation_email(utilisateur.email, qr_buffer)
+            # Assigner le chemin de l'e-billet à la commande et sauvegarder
+            commande.ebillet_path = qr_code_path
+            commande.save()
 
-            # Rediriger vers la page de confirmation de paiement
+            # Envoyer l'e-mail de confirmation avec le chemin du QR code
+            send_confirmation_email(utilisateur.email, qr_code_path)
+
+            # Redirige vers la page de confirmation de paiement
             return redirect('paiement')
 
     # Si la requête n'est pas POST, rediriger vers le panier
@@ -178,16 +184,24 @@ def generate_qr_code(utilisateur, commande):
     # Créer une image QR
     img = qr.make_image(fill='black', back_color='white')
 
-    # Sauvegarder le QR code dans un buffer en mémoire
-    qr_buffer = BytesIO()
-    img.save(qr_buffer, format='PNG')
-    qr_buffer.seek(0)  # Revenir au début du buffer
+    # Chemin où enregistrer l'image
+    qr_code_filename = f"qr_code_{commande.numero_commande}.png"
+    qr_code_path = os.path.join(settings.MEDIA_ROOT, 'qr_codes', qr_code_filename)
 
-    return qr_buffer
+    # S'assurer que le dossier existe
+    os.makedirs(os.path.dirname(qr_code_path), exist_ok=True)
+
+    # Sauvegarder l'image QR code
+    img.save(qr_code_path)
+
+    # Log pour vérifier le chemin
+    print(f"QR code path: {qr_code_path}")
+
+    return qr_code_path
 
 
 #expédition du mail avec le qrcode qui fait office de ebillet
-def send_confirmation_email(user_email, qr_buffer):
+def send_confirmation_email(user_email, qr_code_path):
     # Construire l'email
     email = EmailMessage(
         'Confirmation de commande',
@@ -197,7 +211,29 @@ def send_confirmation_email(user_email, qr_buffer):
     )
 
     # Ajouter le QR code en pièce jointe
-    email.attach('ebillet.png', qr_buffer.getvalue(), 'image/png')
+    with open(qr_code_path, 'rb') as f:
+        email.attach('ebillet.png', f.read(), 'image/png')
 
     # Envoyer l'email
     email.send()
+    
+    
+@login_required
+def telecharger_ebillet(request, commande_id):
+    try:
+        # Récupérer la commande
+        commande = Commande.objects.get(id=commande_id, user=request.user)
+        
+        # Récupérer le chemin du fichier e-billet (QR code)
+        ebillet_path = commande.ebillet_path
+        
+        # Ouvrir le fichier e-billet en mode binaire
+        if ebillet_path and os.path.exists(ebillet_path):
+            response = FileResponse(open(ebillet_path, 'rb'), content_type='application/octet-stream')
+            response['Content-Disposition'] = f'attachment; filename="{os.path.basename(ebillet_path)}"'
+            return response
+        else:
+            # Si le fichier n'existe pas
+            return HttpResponse('Le billet électronique est introuvable.', status=404)
+    except Commande.DoesNotExist:
+        return HttpResponse('Commande introuvable.', status=404)
