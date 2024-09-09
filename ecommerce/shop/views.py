@@ -132,7 +132,7 @@ def home(request):
 
 # Fonction pour afficher la page des commandes et les commandes dans la page commandes
 def commandes(request):
-    commandes = Commande.objects.filter(user=request.user)
+    commandes = Commande.objects.filter(user=request.user).order_by('-date_commande')
     return render(request, 'commandes.html', {'commandes': commandes})
 
 # Fonction pour afficher la page du paiement
