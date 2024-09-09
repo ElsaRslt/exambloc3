@@ -17,7 +17,7 @@
                         <option value="{{ formule.id }}" data-price-multiplier="{{ formule.price }}">{{ formule.formule }} - {{ formule.price|floatformat:2 }} €</option>
                     {% endfor %}
                 </select>
-                <p id="event-price">{{ formules_with_prices.0.price|floatformat:2 }} €</p>
+                {% comment %} <p id="event-price">{{ formules_with_prices.0.price|floatformat:2 }} €</p> {% endcomment %}
                 <button id="add-to-cart-btn" type="submit" class="btn btn-success shopping_cart" data-item-id="{{ evenement_object.id }}">Ajouter au panier</button>
             </form>
         </div>
