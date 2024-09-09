@@ -13,6 +13,7 @@ import qrcode
 from io import BytesIO
 from django.core.mail import EmailMessage
 from django.conf import settings
+import os
 
 # Fonction qui va permettre d'afficher le fichier index et les images
 def index(request):
@@ -136,34 +137,33 @@ def proceder_au_paiement(request):
     if request.method == 'POST':
         panier_data = request.POST.get('panier_data')
         total_prix = request.POST.get('total_prix')
-        
+
         if panier_data:
-            panier = json.loads(panier_data)
             utilisateur = request.user
-            
-            # Créer la commande
+
+            # Crée une nouvelle commande
             commande = Commande.objects.create(
                 user=utilisateur,
                 panier=panier_data,
-                prix_total=total_prix
+                prix_total=total_prix,
             )
-            
-            # Générer le QR code
-            qr_buffer = generate_qr_code(utilisateur.cle_securite, commande.cle_securite_commande)
-            
-            # Envoyer l'email avec le QR code
+
+            # Générer le QR code et récupérer le buffer en mémoire
+            qr_buffer = generate_qr_code(utilisateur, commande)
+
+            # Envoyer l'e-mail de confirmation
             send_confirmation_email(utilisateur.email, qr_buffer)
-            
+
             # Rediriger vers la page de confirmation de paiement
             return redirect('paiement')
 
-    # Rediriger si la requête n'est pas POST
+    # Si la requête n'est pas POST, rediriger vers le panier
     return redirect('panier')
 
 # generation du qrcode pour le ebillet
-def generate_qr_code(user_key, order_key):
-    # Combiner les clés de sécurité
-    data = f"{user_key}_{order_key}"
+def generate_qr_code(utilisateur, commande):
+    # Combinaison de la clé de sécurité de l'utilisateur et de la commande
+    data = f"{utilisateur.cle_securite}-{commande.cle_securite_commande}"
 
     # Générer le QR code
     qr = qrcode.QRCode(
@@ -175,15 +175,16 @@ def generate_qr_code(user_key, order_key):
     qr.add_data(data)
     qr.make(fit=True)
 
-    # Convertir en image
+    # Créer une image QR
     img = qr.make_image(fill='black', back_color='white')
 
-    # Sauvegarder l'image dans un buffer
-    buffer = BytesIO()
-    img.save(buffer, format="PNG")
-    buffer.seek(0)
+    # Sauvegarder le QR code dans un buffer en mémoire
+    qr_buffer = BytesIO()
+    img.save(qr_buffer, format='PNG')
+    qr_buffer.seek(0)  # Revenir au début du buffer
 
-    return buffer
+    return qr_buffer
+
 
 #expédition du mail avec le qrcode qui fait office de ebillet
 def send_confirmation_email(user_email, qr_buffer):

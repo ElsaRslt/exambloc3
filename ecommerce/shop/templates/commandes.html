@@ -15,6 +15,7 @@
                     <th scope="col">Date de la commande</th>
                     <th scope="col">Événements</th>
                     <th scope="col">Prix Total</th>
+                    <th scope="col">E-billet</th>
                 </tr>
             </thead>
             <tbody>
@@ -24,6 +25,13 @@
                         <td>{{ commande.date_commande|date:"d M Y H:i" }}</td>
                         <td>{{ commande.panier|get_event_names }}</td> <!-- Affiche directement la liste des événements -->
                         <td>{{ commande.prix_total }} €</td>
+                        <td>
+                            {% if commande.ebillet_path %}
+                                <a href="{{ commande.ebillet_path }}" class="btn btn-primary" download>Télécharger mon e-billet</a>
+                            {% else %}
+                                <span>E-billet non disponible</span>
+                            {% endif %}
+                        </td>
                     </tr>
                 {% endfor %}
             </tbody>

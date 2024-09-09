@@ -82,6 +82,7 @@ class Commande(models.Model):
     date_commande = models.DateTimeField(auto_now_add=True)
     cle_securite_commande = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     numero_commande = models.CharField(max_length=6, unique=True, blank=True, editable=False)
+    ebillet_path = models.CharField(max_length=255, null=True, blank=True)  # Stocker le chemin de l'e-billet
 
     def save(self, *args, **kwargs):
         if not self.numero_commande:
