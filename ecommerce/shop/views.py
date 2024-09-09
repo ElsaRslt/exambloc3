@@ -21,6 +21,7 @@ from reportlab.lib import colors
 from reportlab.lib.units import cm
 from reportlab.lib.pagesizes import letter
 from PIL import Image
+from django.http import HttpResponse
 
 # Fonction qui va permettre d'afficher le fichier index et les images
 def index(request):
@@ -149,11 +150,6 @@ def proceder_au_paiement(request):
             panier = json.loads(panier_data)
             utilisateur = request.user
 
-            # Récupérer l'événement depuis le panier
-            first_event_key = list(panier.keys())[0]
-            first_event_name = panier[first_event_key]['name']
-            evenement = Evenement.objects.get(title=first_event_name)
-
             # Créer une nouvelle commande
             commande = Commande.objects.create(
                 user=utilisateur,
@@ -161,15 +157,27 @@ def proceder_au_paiement(request):
                 prix_total=total_prix,
             )
 
-            # Générer le e-billet avec l'événement et l'utilisateur
-            ebillet_path = generate_ebillet(utilisateur, commande, evenement)
+            ebillet_paths = []
 
-            # Assigner le chemin du e-billet à la commande et sauvegarder
-            commande.ebillet_path = ebillet_path
+            # Générer un e-billet pour chaque événement dans le panier
+            for event_key, event_info in panier.items():
+                event_name = event_info['name']
+                formule_name = event_info['formule']
+                # event_price = event_info['price']
+
+                # Récupérer l'événement correspondant
+                evenement = Evenement.objects.get(title=event_name)
+
+                # Générer le e-billet pour cet événement
+                ebillet_path = generate_ebillet(utilisateur, commande, evenement, formule_name ) #event_price
+                ebillet_paths.append(ebillet_path)
+
+            # Sauvegarder le chemin des e-billets générés dans la commande
+            commande.ebillet_path = json.dumps(ebillet_paths)  # Sauvegarder tous les chemins de e-billet sous forme de JSON
             commande.save()
 
-            # Envoyer l'email de confirmation avec le billet PDF
-            send_confirmation_email(utilisateur.email, ebillet_path)
+            # Envoyer l'email de confirmation avec tous les billets en pièce jointe
+            send_confirmation_email(utilisateur.email, ebillet_paths)
 
             # Rediriger vers la page de confirmation de paiement
             return redirect('paiement')
@@ -179,10 +187,9 @@ def proceder_au_paiement(request):
 
 
 
-#generation du ebillet et du qrcode
-def generate_ebillet(utilisateur, commande, evenement):
+def generate_ebillet(utilisateur, commande, evenement, formule_name):#, event_price
     # Chemin pour enregistrer le PDF
-    pdf_filename = f"ebillet_{commande.numero_commande}.pdf"
+    pdf_filename = f"ebillet_{commande.numero_commande}_{evenement.title}.pdf"
     ebillet_path = os.path.join(settings.MEDIA_ROOT, 'ebillets', pdf_filename)
 
     # Générer un buffer pour le PDF
@@ -194,15 +201,16 @@ def generate_ebillet(utilisateur, commande, evenement):
     c.drawString(100, 800, "Votre E-Billet")
     c.setFont("Helvetica", 12)
     c.drawString(100, 780, f"Nom de l'événement : {evenement.title}")
-    c.drawString(100, 760, f"Date de l'événement : {evenement.date_event.strftime('%d %b %Y %H:%M')}")
-    c.drawString(100, 740, f"Nom de l'acheteur : {utilisateur.nom} {utilisateur.prenom}")
-    c.drawString(100, 720, f"Commande n° : {commande.numero_commande}")
-    c.drawString(100, 700, f"Prix : {commande.prix_total} €")
+    c.drawString(100, 760, f"Formule : {formule_name}")
+    c.drawString(100, 740, f"Date de l'événement : {evenement.date_event.strftime('%d %b %Y %H:%M')}")
+    c.drawString(100, 720, f"Nom de l'acheteur : {utilisateur.nom} {utilisateur.prenom}")
+    c.drawString(100, 700, f"Commande n° : {commande.numero_commande}")
+    # c.drawString(100, 680, f"Prix : {event_price} €")
 
-    # Générer le QR code
-    data = f"{utilisateur.cle_securite}-{commande.cle_securite_commande}"
+    # Générer le QR code spécifique à cet événement
+    data = f"{utilisateur.cle_securite}-{commande.cle_securite_commande}-{evenement.title}-{evenement.date_event}"
     qr = qrcode.make(data)
-    qr_path = os.path.join(settings.MEDIA_ROOT, 'qr_codes', f"qr_{commande.numero_commande}.png")
+    qr_path = os.path.join(settings.MEDIA_ROOT, 'qr_codes', f"qr_{commande.numero_commande}_{evenement.title}.png")
     qr.save(qr_path)
 
     # Ajouter le QR code au PDF
@@ -221,24 +229,21 @@ def generate_ebillet(utilisateur, commande, evenement):
 
 
 
-#expédition du mail avec le ebillet
-def send_confirmation_email(user_email, ebillet_path):
+#expédition du mail avec le ou les ebillets
+def send_confirmation_email(user_email, ebillet_paths):
     email = EmailMessage(
         'Confirmation de commande avec E-Billet',
-        'Merci pour votre commande. Veuillez trouver votre e-billet en pièce jointe.',
+        'Merci pour votre commande. Veuillez trouver vos e-billets en pièce jointe.',
         settings.DEFAULT_FROM_EMAIL,
         [user_email],
     )
 
-    # Attacher le fichier PDF
-    with open(ebillet_path, 'rb') as f:
-        email.attach('ebillet.pdf', f.read(), 'application/pdf')
+    # Attacher chaque e-billet au mail
+    for ebillet_path in ebillet_paths:
+        with open(ebillet_path, 'rb') as f:
+            email.attach(f"ebillet_{os.path.basename(ebillet_path)}", f.read(), 'application/pdf')
 
     email.send()
-    
-    
-    
-    
     
     
 @login_required
@@ -247,23 +252,30 @@ def telecharger_ebillet(request, commande_id):
         # Récupérer la commande
         commande = Commande.objects.get(id=commande_id, user=request.user)
         
-        # Récupérer le chemin du fichier e-billet (QR code)
-        ebillet_path = commande.ebillet_path
+        # Récupérer les chemins des fichiers e-billets (sous forme de liste JSON)
+        ebillet_paths = json.loads(commande.ebillet_path)
         
-        # Ouvrir le fichier e-billet en mode binaire
-        if ebillet_path and os.path.exists(ebillet_path):
-            response = FileResponse(open(ebillet_path, 'rb'), content_type='application/octet-stream')
-            response['Content-Disposition'] = f'attachment; filename="{os.path.basename(ebillet_path)}"'
-            return response
-        else:
-            # Si le fichier n'existe pas
-            return HttpResponse('Le billet électronique est introuvable.', status=404)
+        # Préparer une réponse pour le téléchargement de plusieurs fichiers
+        response = HttpResponse(content_type='application/zip')
+        response['Content-Disposition'] = f'attachment; filename="ebillets_{commande.numero_commande}.zip"'
+
+        # Créer un fichier zip pour les e-billets
+        from zipfile import ZipFile
+        from io import BytesIO
+
+        zip_buffer = BytesIO()
+        with ZipFile(zip_buffer, 'w') as zip_file:
+            for ebillet_path in ebillet_paths:
+                # Ajouter chaque e-billet au fichier zip
+                if os.path.exists(ebillet_path):
+                    zip_file.write(ebillet_path, os.path.basename(ebillet_path))
+        
+        # Finaliser le fichier zip
+        zip_buffer.seek(0)
+        response.write(zip_buffer.getvalue())
+        
+        return response
     except Commande.DoesNotExist:
         return HttpResponse('Commande introuvable.', status=404)
-    
-def get_event_date(event_title):
-    try:
-        event = Evenement.objects.get(title=event_title)
-        return event.date_event.strftime("%d %b %Y")  # Format de la date
-    except Evenement.DoesNotExist:
-        return "Date inconnue"
+    except Exception as e:
+        return HttpResponse(f'Erreur lors du téléchargement des e-billets: {str(e)}', status=500)
