@@ -145,42 +145,83 @@ def proceder_au_paiement(request):
     if request.method == 'POST':
         panier_data = request.POST.get('panier_data')
         total_prix = request.POST.get('total_prix')
+        
+        print(f"Panier Data: {panier_data}")  # Debug: Afficher les données du panier
+        print(f"Total Prix: {total_prix}")   # Debug: Afficher le total prix
 
         if panier_data:
-            panier = json.loads(panier_data)
+            try:
+                panier = json.loads(panier_data)
+            except json.JSONDecodeError:
+                print("Erreur de décodage JSON pour les données du panier")
+                return redirect('panier')
+            
             utilisateur = request.user
+            formule_instance = None
+            evenement_instance = None 
+            commande = None
 
-            # Créer une nouvelle commande
-            commande = Commande.objects.create(
-                user=utilisateur,
-                panier=panier_data,
-                prix_total=total_prix,
-            )
+            for item in panier.values():
+                evenement_title = item.get('name')
+                formule_formule = item.get('formule')
+                print(f"Traitement de l'article : {item}")
+                
+                if evenement_title:
+                    try:
+                        evenement_instance = Evenement.objects.get(title=evenement_title)
+                        print(f"Événement trouvé : {evenement_title}")
+                    except Evenement.DoesNotExist:
+                        evenement_instance = None
+                        print(f"Événement non trouvé : {evenement_title}")
+                
+                if formule_formule:
+                    try:
+                        formule_instance = Formule.objects.get(formule=formule_formule)
+                        print(f"Formule trouvée : {formule_instance}")
+                    except Formule.DoesNotExist:
+                        formule_instance = None
+                        print(f"Formule non trouvée : {formule_formule}")
 
-            ebillet_paths = []
+            if evenement_instance and formule_instance:
+                commande = Commande.objects.create(
+                    user=utilisateur,
+                    panier_data=panier_data,
+                    prix_total=total_prix,
+                    evenement=evenement_instance,
+                    formule=formule_instance
+                )
+                print(f"Commande créée : {commande}")
+
+                ebillet_paths = []
 
             # Générer un e-billet pour chaque événement dans le panier
-            for event_key, event_info in panier.items():
-                event_name = event_info['name']
-                formule_name = event_info['formule']
-                # event_price = event_info['price']
+                for event_key, event_info in panier.items():
+                    event_name = event_info['name']
+                    formule_name = event_info['formule']
+                    print(f"Création du e-billet pour l'événement : {event_name} et la formule : {formule_name}")
+                    
+                    try:
+                        evenement_instance = Evenement.objects.get(title=event_name)
+                        formule_instance = Formule.objects.get(formule=formule_name)
+                        if commande:
+                            ebillet_path = generate_ebillet(utilisateur, commande, evenement_instance, formule_instance)
+                            ebillet_paths.append(ebillet_path)
+                    except Exception as e:
+                        print(f"Erreur lors de la génération du e-billet: {str(e)}")
 
-                # Récupérer l'événement correspondant
-                evenement = Evenement.objects.get(title=event_name)
+                if commande:
+                    # Sauvegarder le chemin des e-billets générés dans la commande
+                    commande.ebillet_path = json.dumps(ebillet_paths)  # Sauvegarder tous les chemins de e-billet sous forme de JSON
+                    commande.save()
 
-                # Générer le e-billet pour cet événement
-                ebillet_path = generate_ebillet(utilisateur, commande, evenement, formule_name ) #event_price
-                ebillet_paths.append(ebillet_path)
+                    # Envoyer l'email de confirmation avec tous les billets en pièce jointe
+                    send_confirmation_email(utilisateur.email, ebillet_paths)
 
-            # Sauvegarder le chemin des e-billets générés dans la commande
-            commande.ebillet_path = json.dumps(ebillet_paths)  # Sauvegarder tous les chemins de e-billet sous forme de JSON
-            commande.save()
-
-            # Envoyer l'email de confirmation avec tous les billets en pièce jointe
-            send_confirmation_email(utilisateur.email, ebillet_paths)
-
-            # Rediriger vers la page de confirmation de paiement
-            return redirect('paiement')
+                # Rediriger vers la page de confirmation de paiement
+                return redirect('paiement')
+            print("Commande non créée car les événements ou les formules sont manquants.")
+        else:
+            print("Les données du panier sont vides.")
 
     # Si la requête n'est pas POST, rediriger vers le panier
     return redirect('panier')
