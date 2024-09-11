@@ -22,6 +22,7 @@ from reportlab.lib.units import cm
 from reportlab.lib.pagesizes import letter
 from PIL import Image
 from django.http import HttpResponse
+from zipfile import ZipFile
 
 # Fonction qui va permettre d'afficher le fichier index et les images
 def index(request):
@@ -120,7 +121,6 @@ def proceder_au_paiement(request):
         print(f"Total Prix: {total_prix}")
         print(f"utilisateur: {utilisateur }")
         
-
         # Convertir le panier_data en dictionnaire
         try:
             panier_data_dict = json.loads(panier_data)
@@ -128,36 +128,20 @@ def proceder_au_paiement(request):
             print("Erreur de décodage JSON pour le panier_data")
             return redirect('erreur_page')
 
-        # Extrait les informations de la première entrée du panier
-        first_item = next(iter(panier_data_dict.values()), None)
-        if first_item:
-            formule_name = first_item.get('formule')
-            evenement_name = first_item.get('name')
-        else:
-            print("Aucun élément trouvé dans le panier")
-            return redirect('erreur_page')
-
-        # Obtenez l'ID de la formule et de l'événement basés sur le nom
-        try:
-            formule = Formule.objects.get(formule=formule_name)
-            evenement = Evenement.objects.get(title=evenement_name)
-        except (Formule.DoesNotExist, Evenement.DoesNotExist) as e:
-            print(f"Erreur: {e}")
-            return redirect('erreur_page')
-
         # Créez une nouvelle commande
         commande = Commande(
             user=utilisateur,
             panier=panier_data,
-            prix_total=total_prix,
-            formule=formule,
-            evenement=evenement
+            prix_total=total_prix
         )
         commande.save()
         print(f"Commande créée avec numéro: {commande.numero_commande}")
 
         # Créez des e-billets pour chaque événement et mettez à jour la commande
         ebillet_paths = []
+        
+        formules = set()
+        evenements = set()
         
         for item_id, item in panier_data_dict.items():
             try:
@@ -168,25 +152,29 @@ def proceder_au_paiement(request):
                 # Générer un e-billet unique pour chaque combinaison événement-formule
                 ebillet_path = generate_ebillet(utilisateur, commande, evenement, formule)
                 ebillet_paths.append(ebillet_path)
+                
+                formules.add(formule)
+                evenements.add(evenement)
             except (Formule.DoesNotExist, Evenement.DoesNotExist):
                 print(f"Erreur pour item {item_id}: formule ou événement non trouvé")
                 continue
+        
+        # Ajouter les relations ManyToMany après avoir sauvegardé la commande
+        commande.formules.set(formules)
+        commande.evenements.set(evenements)
 
-        if commande:
-            # Sauvegarder le chemin des e-billets générés dans la commande
-            commande.ebillet_path = json.dumps(ebillet_paths)  # Sauvegarder tous les chemins de e-billet sous forme de JSON
-            commande.save()
+        # Sauvegarder le chemin des e-billets générés dans la commande
+        commande.ebillet_path = json.dumps(ebillet_paths)  # Sauvegarder tous les chemins de e-billet sous forme de JSON
+        commande.save()
 
-            # Envoyer l'email de confirmation avec tous les billets en pièce jointe
-            user_email = request.user.email
-            send_confirmation_email(user_email, ebillet_paths)
-            print("email envoyé")
+        # Envoyer l'email de confirmation avec tous les billets en pièce jointe
+        user_email = request.user.email
+        send_confirmation_email(user_email, ebillet_paths)
+        print("email envoyé")
 
-            # Rediriger vers la page de confirmation de paiement
-            return redirect('paiement')
-        else:
-            print("Les données du panier sont vides.")
-
+        # Rediriger vers la page de confirmation de paiement
+        return redirect('paiement')
+    
     # Si la requête n'est pas POST, rediriger vers le panier
     return redirect('panier')
 
@@ -240,21 +228,39 @@ def generate_ebillet(utilisateur, commande, evenement, formule):#, event_price
 
 
 #expédition du mail avec le ou les ebillets
-def send_confirmation_email(user_email, ebillet_paths):
+""" def send_confirmation_email(user_email, ebillet_paths):
     email = EmailMessage(
         'Confirmation de commande avec E-Billet',
         'Merci pour votre commande. Veuillez trouver vos e-billets en pièce jointe.',
         settings.DEFAULT_FROM_EMAIL,
         [user_email],
+        print('email ok')
     )
 
     # Attacher chaque e-billet au mail
     for path in ebillet_paths:
         with open(path, 'rb') as f:
             email.attach(f"ebillet_{os.path.basename(path)}", f.read(), 'application/pdf')
+            print('ebillets rattachés')
 
-    email.send()
+    email.send() """
     
+def send_confirmation_email(user_email, ebillet_paths):
+    subject = 'Votre Confirmation de votre Commande'
+    message = 'Merci pour votre commande. Veuillez trouver en pièce jointe vos e-billets. Le service commercial des JO Paris 2024'
+    email = EmailMessage(subject, message, settings.DEFAULT_FROM_EMAIL, [user_email])
+    print('email ok')
+    
+    # Ajouter les e-billets en tant que pièces jointes
+    for ebillet_path in ebillet_paths:
+        email.attach_file(ebillet_path)
+        print('ebillets rattachés')
+    
+    email.send()
+    print('ok fin du mail')
+    
+    
+
     
 @login_required
 def telecharger_ebillet(request, commande_id):
@@ -262,21 +268,24 @@ def telecharger_ebillet(request, commande_id):
         # Récupérer la commande
         commande = Commande.objects.get(id=commande_id, user=request.user)
         
-        # Récupérer les chemins des fichiers e-billets (sous forme de liste JSON)
-        ebillet_paths = json.loads(commande.ebillet_path)
+        # Vérifier et corriger le format de ebillet_path
+        try:
+            ebillet_paths = json.loads(commande.ebillet_path)
+            if not isinstance(ebillet_paths, list):
+                raise ValueError("Le format des chemins des e-billets n'est pas une liste")
+        except json.JSONDecodeError:
+            return HttpResponse('Erreur de décodage JSON.', status=400)
+        except ValueError as e:
+            return HttpResponse(f'Erreur de format des données: {str(e)}', status=400)
         
         # Préparer une réponse pour le téléchargement de plusieurs fichiers
         response = HttpResponse(content_type='application/zip')
         response['Content-Disposition'] = f'attachment; filename="ebillets_{commande.numero_commande}.zip"'
 
         # Créer un fichier zip pour les e-billets
-        from zipfile import ZipFile
-        from io import BytesIO
-
         zip_buffer = BytesIO()
         with ZipFile(zip_buffer, 'w') as zip_file:
             for ebillet_path in ebillet_paths:
-                # Ajouter chaque e-billet au fichier zip
                 if os.path.exists(ebillet_path):
                     zip_file.write(ebillet_path, os.path.basename(ebillet_path))
         

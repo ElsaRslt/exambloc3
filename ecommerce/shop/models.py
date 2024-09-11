@@ -86,8 +86,10 @@ class Commande(models.Model):
     numero_commande = models.CharField(max_length=6, unique=True, blank=True, editable=False)
     ebillet_path = models.CharField(max_length=255, null=True, blank=True)  # Stocker le chemin de l'e-billet
     date_added = models.DateTimeField(auto_now=True)
-    formule = models.ForeignKey('Formule', on_delete=models.CASCADE)
-    evenement= models.ForeignKey('Evenement', on_delete=models.CASCADE)
+    
+    # Utilisation de ManyToManyField pour associer plusieurs formules et événements à une commande
+    formules = models.ManyToManyField('Formule', related_name='commandes_formules')
+    evenements = models.ManyToManyField('Evenement', related_name='commandes_evenements')
 
     def save(self, *args, **kwargs):
         if not self.numero_commande:
