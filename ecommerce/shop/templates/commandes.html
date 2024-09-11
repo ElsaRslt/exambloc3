@@ -13,7 +13,7 @@
                 <tr>
                     <th scope="col">Numéro de commande</th>
                     <th scope="col">Date de la commande</th>
-                    <th scope="col">Événements</th>
+                    <th scope="col">Événements/Formules</th>
                     <th scope="col">Prix Total</th>
                     <th scope="col">E-billet</th>
                 </tr>
@@ -23,7 +23,17 @@
                     <tr>
                         <td>{{ commande.numero_commande }}</td>
                         <td>{{ commande.date_commande|date:"d M Y H:i" }}</td>
-                        <td>{{ commande.panier|get_event_names }}</td> <!-- Affiche directement la liste des événements -->
+                            <td>
+                                <ul>
+                                    {% for evenement in commande.evenements.all %}
+                                        {% for formule in commande.formules.all %}
+                                            <li>{{ evenement.title }} - {{ formule.formule }}</li>
+                                        {% endfor %}
+                                    {% empty %}
+                                        Aucun événement ou formule
+                                    {% endfor %}
+                                </ul>
+                            </td>
                         <td>{{ commande.prix_total }} €</td>
                         <td>
                             {% if commande.ebillet_path %}
