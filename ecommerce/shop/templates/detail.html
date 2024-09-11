@@ -1,40 +1,86 @@
-{% extends 'base.html' %} <!-- permet d'avoir l'entête et le menu sur toutes les pages -->
+{% extends 'base.html' %}  <!--permet d'avoir l'entête et le menu sur toutes les pages -->
 
 {% block content %}
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-md-6">
-            <img src="{{ evenement_object.image.url }}" width="500px" height="500px" alt="{{ evenement_object.title }}" class="img-fluid">
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-6">
+                <img src="{{ event.image.url }}" width="500px" height="500px" alt="{{ evenement_object.title }}" class="img-fluid">
+            </div>
+            <div class="col-md-6">
+                <h2 id="titre_ev" class="text-warning titre_ev">{{ event.title }}</h2>
+                <p>{{ event.description }}</p>
+                <form id="formuleForm">
+                    <label for="formule">Choisissez une formule :</label>
+                    <select id="formule" name="formule">
+                        <option value="">Choisir une formule</option>  
+                        {% for formule in event.formules.all %}
+                        <option value="{{ formule.formule }}">
+                            {{ formule.formule }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <p>Prix total: <span id="prix_total" style="display: none;">{{ event.base_price }}</span> €</p>
+                    <button id="add-to-cart-btn" type="submit" class="btn btn-success shopping_cart" data-item-id="{{ evenement_object.id }}">Ajouter au panier</button>
+                    <p id="error-message" style="color: red; display: none;">Merci de sélectionner une formule.</p>
+                </form>
+            </div>
         </div>
-        <div class="col-md-6">
-            <h2 id="titre_ev" class="text-warning titre_ev">{{ evenement_object.title }}</h2>
-            <p>{{ evenement_object.description }}</p>
-            <form method="post">
-                {% csrf_token %}
-                <label for="formule">Choisir une formule:</label>
-                <select name="formule" id="formule-select">
-                    {% for formule in formules_with_prices %}
-                        <option value="{{ formule.id }}" data-price-multiplier="{{ formule.price }}">{{ formule.formule }} - {{ formule.price|floatformat:2 }} €</option>
-                    {% endfor %}
-                </select>
-                {% comment %} <p id="event-price">{{ formules_with_prices.0.price|floatformat:2 }} €</p> {% endcomment %}
-                <button id="add-to-cart-btn" type="submit" class="btn btn-success shopping_cart" data-item-id="{{ evenement_object.id }}">Ajouter au panier</button>
-            </form>
-        </div>
-    </div>
-</div>
+
 {% endblock %}
 
 {% block script %}
-    <script type= "text/javascript">
+<script type="text/javascript">
 
-        // pour calculer le prix en fonction de la formule choisie 
-    document.getElementById('formule-select').addEventListener('change', function() {
-        var selectedOption = this.options[this.selectedIndex];
-        var price = parseFloat(selectedOption.getAttribute('data-price-multiplier'));
-        document.getElementById('event-price').textContent = price.toFixed(2) + ' €';
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log("hello");
+
+        // Sélection des éléments HTML
+        const selectFormule = document.getElementById('formule');
+        const prixTotalSpan = document.getElementById('prix_total');
+        const basePrice = parseFloat({{ event.base_price }});  // Conversion du prix de base en float
+        const addToCartButton = document.getElementById('add-to-cart-btn');
+        const errorMessage = document.getElementById('error-message');
+    
+        // Cacher le prix total par défaut
+        prixTotalSpan.style.display = 'none';
+
+        // Créer un objet pour stocker le nom de la formule et son multiplicateur
+        const formulesMultiplicateurs = {
+            {% for formule in event.formules.all %}
+            "{{ formule.formule }}": parseFloat({{ formule.price_multiplier }}),
+            {% endfor %}
+        };
+
+        // Débogage - Vérifions si les formules sont bien récupérées
+        console.log("Multiplicateurs des formules:", formulesMultiplicateurs);
+
+        // Vérifier si l'élément selectFormule existe
+        if (selectFormule) {
+            // Fonction pour mettre à jour le prix
+            selectFormule.addEventListener('change', function() {
+                const selectedFormule = this.value;  // Obtenez le nom de la formule sélectionnée
+                console.log("Formule sélectionnée:", selectedFormule);  // Vérifier la formule sélectionnée
+
+                if (selectedFormule) {
+                    // Afficher le prix total et le mettre à jour
+                    const multiplier = formulesMultiplicateurs[selectedFormule];  // Obtenez le multiplicateur associé
+                    console.log("Multiplicateur:", multiplier);  // Vérifier le multiplicateur obtenu
+
+                if (multiplier) {  // Si un multiplicateur est trouvé
+                    const totalPrice = (basePrice * multiplier).toFixed(2);  // Calcul du prix total
+                    prixTotalSpan.textContent = totalPrice;  // Mise à jour du prix affiché
+                    prixTotalSpan.style.display = 'inline';  // Afficher le prix total
+                }
+                } else {
+                    // Cacher le prix total si aucune formule n'est sélectionnée
+                    prixTotalSpan.style.display = 'none';  // Masquer le prix total
+                    }
+            });
+        } else {
+            console.error("L'élément selectFormule n'a pas été trouvé.");
+        }
     });
-
-    </script>
+</script>
 
 {% endblock %}                                                                                  

@@ -71,7 +71,10 @@
     </div>
 </body>
 
+{% block script %}{% endblock %}
+{% block java %}{% endblock %}
 {% block js %}
+
 <script type="text/javascript">
 
     //on regarde si le panier est nul. si c'est le cas création d'un panier
@@ -87,7 +90,7 @@
         let total = 0;
         for (let key in panier) {
             if (panier.hasOwnProperty(key)) {
-                total += parseInt(panier[key].quantity); // Assurez-vous que la quantité est toujours un nombre
+                total += parseInt(panier[key].quantity); 
             }
         }
         return total;
@@ -97,7 +100,7 @@
     function calculTotalPrix(panier) {
         let totalPrix = 0;
         for (let key in panier) {
-            totalPrix += panier[key].price * panier[key].quantity;
+            totalPrix += parseFloat(panier[key].price) * panier[key].quantity;
         }
         return totalPrix.toFixed(2); // garder deux décimales 
     }
@@ -122,56 +125,66 @@
         let panierString = "<h5>Votre panier</h5><ul>";
         for (let key in panier) {
             if (panier.hasOwnProperty(key)) {
-                panierString += `<li>${panier[key].name} - ${panier[key].formule} : ${panier[key].quantity}</li>`;
+                panierString += `<li>${panier[key].name} - ${panier[key].formule} : ${panier[key].quantity} x ${panier[key].price}</li>`;
             }
         }
         panierString += "</ul>";
         document.getElementById('shopping').setAttribute('data-content', panierString);
     }
 
-        // Ajouter un écouteur d'événement pour le bouton Ajouter au panier (uniquement si présent sur la page)
-        document.addEventListener('DOMContentLoaded', function() {
-            let panier = JSON.parse(localStorage.getItem('panier')) || {};
-            
-            const addToCartButton = document.getElementById('add-to-cart-btn');
-            if (addToCartButton) {
-                addToCartButton.addEventListener('click', function(event) {
-                    event.preventDefault(); // pour ne pas recharger la page et voir le debug en console
-                    console.log("ajouter");
 
-                    var item_id = this.getAttribute('data-item-id');
-                    var item_name = document.querySelector(".titre_ev").textContent.trim(); // avoir le nom de l'evenement
-                    var selectElement = document.querySelector("select[name='formule']");
-                    var item_formule = selectElement.options[selectElement.selectedIndex].text; // obtenir le texte (nom de la formule) de la sélection
-                    
-                    console.log(item_id, item_name,item_formule);
-
-                    if (panier[item_id + '_' + item_formule] !== undefined) { 
-                        panier[item_id + '_' + item_formule].quantity += 1;
-                    } else {
-                        panier[item_id + '_' + item_formule] = { 
-                            name: item_name, 
-                            formule: item_formule, // Nom de la formule
-                            quantity: 1
-                        }; 
-                    }
-
-                    console.log(panier);
-
-                    localStorage.setItem('panier', JSON.stringify(panier)); // Récupération du panier depuis localStorage au chargement de la page
-
-                    // Pour afficher dans le panier dans la navbar le nombre total d'articles ajoutés au panier 
-                    let totalArticles = nbTotalArticle(panier);
-                    document.getElementById("shopping").innerHTML = "Panier(" + totalArticles + ")";
-
-                    // Mettre à jour le contenu du popover
-                    updatePopover();
-                    //$('[data-toggle="popover"]').popover('update');
-                });
-            }
-        });
+    // Ajouter un écouteur d'événement pour le bouton Ajouter au panier (uniquement si présent sur la page)
+    document.addEventListener('DOMContentLoaded', function() {
+        let panier = JSON.parse(localStorage.getItem('panier')) || {};
         
-    //AfficherListe(panier)
+        const addToCartButton = document.getElementById('add-to-cart-btn');
+        const errorMessage = document.getElementById('error-message');
+        if (addToCartButton) {
+            addToCartButton.addEventListener('click', function(event) {
+                event.preventDefault(); // pour ne pas recharger la page et voir le debug en console
+                console.log("ajouter");
+
+                var item_id = this.getAttribute('data-item-id');
+                var item_name = document.querySelector("#titre_ev").textContent.trim(); // obtenir le nom de l'événement
+                var item_formule = document.querySelector("select[name='formule']").value.trim(); // Récupère la valeur sélectionnée la nom de la formule
+                var item_price = document.querySelector("#prix_total").textContent.trim(); // le prix
+
+                if (!item_formule) {
+                    errorMessage.style.display = 'block'; // Afficher le message d'erreur
+                    return; // Arrêter l'exécution de la fonction si aucune formule n'est sélectionnée
+                } else {
+                    errorMessage.style.display = 'none'; // Masquer le message d'erreur
+                }
+                
+                
+                console.log(" item_id= "+ item_id +" item_name= " +item_name+ " item_formule= " +item_formule+ " item_price= " +item_price);
+
+                if (panier[item_id + '_' + item_formule] !== undefined) { 
+                    panier[item_id + '_' + item_formule].quantity += 1;
+                } else {
+                    panier[item_id + '_' + item_formule] = { 
+                        name: item_name, 
+                        formule: item_formule, // Nom de la formule 
+                        price: item_price, // Prix
+                        quantity: 1
+                    }; 
+                }
+
+                console.log(panier);
+
+                localStorage.setItem('panier', JSON.stringify(panier)); // Récupération du panier depuis localStorage au chargement de la page
+
+                // Pour afficher dans le panier dans la navbar le nombre total d'articles ajoutés au panier 
+                let totalArticles = nbTotalArticle(panier);
+                document.getElementById("shopping").innerHTML = "Panier(" + totalArticles + ")";
+
+                // Mettre à jour le contenu du popover
+                updatePopover();
+            });
+        }
+    });
+            
+    
     // recuperation du nom des produits cliqués pour les afficher dans le popover//
     function AfficherListe(panier) {
         var panierString = "<h5>Votre panier</h5>";
