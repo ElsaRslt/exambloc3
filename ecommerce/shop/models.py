@@ -51,6 +51,7 @@ class Utilisateur(AbstractUser):
     email = models.EmailField(unique=True)
     cle_securite = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     username = models.CharField(max_length=150, unique=False)  # Le username devient obligatoire et unique
+    date_added = models.DateTimeField(auto_now=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', 'nom', 'prenom']  # username devient requis
@@ -69,6 +70,7 @@ class Utilisateur(AbstractUser):
     def __str__(self):
         return f"{self.nom} {self.prenom}"
     
+    
 
 # Fonction pour générer un numéro de commande unique
 def generate_order_number():
@@ -82,6 +84,12 @@ class Commande(models.Model):
     date_commande = models.DateTimeField(auto_now_add=True)
     cle_securite_commande = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     numero_commande = models.CharField(max_length=6, unique=True, blank=True, editable=False)
+    ebillet_path = models.CharField(max_length=255, null=True, blank=True)  # Stocker le chemin de l'e-billet
+    date_added = models.DateTimeField(auto_now=True)
+    
+    # Utilisation de ManyToManyField pour associer plusieurs formules et événements à une commande
+    formules = models.ManyToManyField('Formule', related_name='commandes_formules')
+    evenements = models.ManyToManyField('Evenement', related_name='commandes_evenements')
 
     def save(self, *args, **kwargs):
         if not self.numero_commande:
@@ -90,3 +98,5 @@ class Commande(models.Model):
 
     def __str__(self):
         return f"Commande {self.numero_commande} - {self.user.username}"
+    
+

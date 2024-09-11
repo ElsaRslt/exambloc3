@@ -34,6 +34,7 @@ urlpatterns = [
     path('proceder-au-paiement/', views.proceder_au_paiement, name='proceder_au_paiement'),
     path('paiement/', views.paiement, name='paiement'),# URL pour la page paiement
     path('commandes/', views.commandes, name='commandes'),# URL pour la page paiement
+    path('telecharger-ebillet/<int:commande_id>/', views.telecharger_ebillet, name='telecharger_ebillet'), # URL pour le ebillet
 ]
 
 if settings.DEBUG:
