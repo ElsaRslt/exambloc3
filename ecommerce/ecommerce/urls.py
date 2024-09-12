@@ -35,7 +35,11 @@ urlpatterns = [
     path('paiement/', views.paiement, name='paiement'),# URL pour la page paiement
     path('commandes/', views.commandes, name='commandes'),# URL pour la page paiement
     path('telecharger-ebillet/<int:commande_id>/', views.telecharger_ebillet, name='telecharger_ebillet'), # URL pour le ebillet
-]
+    path('valider-email/<uidb64>/<token>/', views.valider_email, name='valider_email'),# URL pour valider le mail inscription
+    path('renvoyer_email_confirmation/', views.renvoyer_email_confirmation, name='renvoyer_email_confirmation'),#pour renvoyer le mail pour la validation du l'adresse mail
+    path('renvoyer_email/', views.renvoyer_email, name='renvoyer_email'),#pour la page pour renovyer le mail pour la validation du l'adresse mail 
+
+] 
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

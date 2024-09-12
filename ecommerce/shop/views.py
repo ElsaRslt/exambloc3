@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from .models import Evenement, Formule, Commande
+from .models import Evenement, Formule, Commande,  Utilisateur
 from django.db.models import Q  # Import de l'opérateur Q pour les requêtes complexes
 from django.core.paginator import Paginator
 from django.shortcuts import render, get_object_or_404
@@ -23,6 +23,27 @@ from reportlab.lib.pagesizes import letter
 from PIL import Image
 from django.http import HttpResponse
 from zipfile import ZipFile
+from django.core.mail import send_mail
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.template.loader import render_to_string
+from django.contrib.sites.shortcuts import get_current_site
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_decode
+from django.utils.encoding import force_str
+from django.utils.timezone import now
+from datetime import timedelta
+from .tokens import account_activation_token
+from django.contrib.auth.forms import AuthenticationForm
+from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login
+from django.contrib import messages
+from django.core.mail import send_mail
+from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+
 
 # Fonction qui va permettre d'afficher le fichier index et les images
 def index(request):
@@ -54,6 +75,10 @@ def panier(request):
     panier = request.session.get('panier', {})
     return render(request, 'panier.html', {'panier': panier})
 
+# Fonction pour afficher la page pour renvoyer le mail pour validation mail utilisareur 
+def renvoyer_email(request):
+    return render(request, 'renvoyer_email.html')
+
 """ # Fonction pour afficher la page d'inscription
 def inscription(request):
     return render(request, 'inscription.html') """
@@ -67,29 +92,119 @@ def inscription(request):
     if request.method == 'POST':
         form = InscriptionForm(request.POST)
         if form.is_valid():
-            form.save()
-            return redirect('connexion')  # Redirection après la création du compte
+            user = form.save(commit=False)
+            #user.is_active = False   #Désactiver le compte avant validation
+            user.save()
+            print(user)
+            envoyer_email_confirmation(user, request)  # Envoyer email de confirmation
+            return render(request, 'email_sent.html')  # Page indiquant que l'email a été envoyé
     else:
         form = InscriptionForm()
     return render(request, 'inscription.html', {'form': form})
 
+
+# envoyer un email pour validation du compte 
+def envoyer_email_confirmation(user, request):
+    current_site = get_current_site(request)
+    subject = 'Confirmez votre adresse e-mail'
+    message = render_to_string('email_confirmation.html', {
+        'user': user,
+        'domain': current_site.domain,
+        'uidb64': urlsafe_base64_encode(force_bytes(user.pk)),
+        'token': account_activation_token.make_token(user),
+    })
+    email = EmailMessage(
+    subject,
+    message,
+    to=[user.email],
+    from_email='noreply@example.com'
+    )
+    email.content_subtype = 'html' 
+    email.send()
+    
+    
+# gestion de la validité du mail 
+def valider_email(request, uidb64, token):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        print("UID décodé:", uid)
+        user = get_object_or_404(Utilisateur, pk=uid)
+    except (TypeError, ValueError, OverflowError) as e:
+        print(f"Erreur de décodage UID: {e}")
+        return render(request, 'email_invalid.html')
+
+    if user is not None:
+        # Vérifier la validité du token
+        token_is_valid = account_activation_token.check_token(user, token)
+        print(f"Token valide: {token_is_valid}")
+
+        if token_is_valid:
+            # Vérifier si le token a expiré (10 minutes)
+            if now() - timedelta(minutes=10) < user.date_added:
+                user.is_active = True
+                user.email_verified = True  # Mettre à jour le champ email_verified
+                user.save()
+                login(request, user)
+                return redirect('home')
+            else:
+                print("Le token a expiré.")
+                return render(request, 'token_expired.html')  # Afficher un message d'expiration
+        else:
+            print("Token invalide.")
+            return render(request, 'email_invalid.html')  # Afficher un message d'email invalide
+    else:
+        print("Utilisateur non trouvé.")
+        return render(request, 'email_invalid.html')  # Afficher un message d'email invalide
+    
+
+#renvoyer le mail de validation 
+def renvoyer_email_confirmation(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        User = get_user_model()
+        try:
+            user = User.objects.get(email=email)
+            if not user.email_verified:
+                envoyer_email_confirmation(user, request)
+                return render(request, 'email_renvoi_confirmation.html')
+        except User.DoesNotExist:
+            messages.error(request, "L'utilisateur n'existe pas. Merci de creer votre compte")
+    return render(request, 'renvoyer_email.html')
+    
 #connexion à son espace 
 def connexion(request):
     if request.method == 'POST':
-        username = request.POST['username'] #récuperation du username avec methode post
-        password = request.POST['password'] #récuperation du mdp avec methode post
-        user = authenticate(request, username=username, password=password) # vérification que tout colle avec tout 
-        if user is not None: # si ok connexion
-            login(request, user)
-            return redirect('home')
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                if not user.email_verified:
+                    if 'resend_email' in request.POST:
+                        return redirect('renvoyer_email', uid=user.pk)
+                    else:
+                        messages.error(request, "Merci de valider votre adresse email avant de vous connecter.")
+                elif not user.is_active:
+                    messages.error(request, "Votre compte a été désactivé.")
+                else:
+                    login(request, user)
+                    return redirect('home')
+            else:
+                messages.error(request, "Nom d'utilisateur ou mot de passe incorrect.")
         else:
-            messages.error(request, 'Nom d\'utilisateur ou mot de passe incorrect.') # si pas ok adieu 
-    return render(request, 'connexion.html')
+            messages.error(request, "Nom d'utilisateur ou mot de passe incorrect.")
+    else:
+        form = AuthenticationForm()
+
+    return render(request, 'connexion.html', {'form': form})
 
 # #deconnexion de son compte
 def deconnexion(request):
     logout(request)
     return redirect('home')  # Redirection vers la page d'accueil après déconnexion
+
 
 #recuperation nom et prenom pour espace perso 
 @login_required

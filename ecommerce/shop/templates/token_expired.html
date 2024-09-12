@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Le lien de validation a expiré</h1>
+
+<!-- Formulaire pour renvoyer l'email de confirmation -->
+<form method="post" action="{% url 'renvoyer_email_confirmation' %}">
+    {% csrf_token %}
+    <p>Entrez votre adresse e-mail pour recevoir un nouveau lien de validation :</p>
+    <input type="email" name="email" required>
+    <button type="submit">Recevoir un nouveau mail de validation</button>
+</form>
+
+{% endblock %}
