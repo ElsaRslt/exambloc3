@@ -1,3 +1,68 @@
-<p>Bonjour {{ user.nom }},</p>
-<p>Merci de vous être inscrit sur notre site. Veuillez cliquer sur le lien ci-dessous pour confirmer votre adresse e-mail :</p>
-<a href="http://{{ domain }}{% url 'valider_email' uidb64=uidb64 token=token %}">Confirmer mon adresse e-mail</a>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmation de votre adresse e-mail</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border: 1px solid #dddddd;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #333333;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        p {
+            color: #555555;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+        a {
+            color: #1a73e8;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 16px;
+            color: #ffffff;
+            background-color: #1a73e8;
+            border-radius: 5px;
+            text-align: center;
+            text-decoration: none;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #999999;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Bonjour {{ user.prenom }},</h1>
+        <p>Merci de vous être inscrit sur notre site. Veuillez cliquer sur le bouton ci-dessous pour confirmer votre adresse e-mail :</p>
+        <p><a href="http://{{ domain }}{% url 'valider_email' uidb64=uidb64 token=token %}" class="button">Confirmer mon adresse e-mail</a></p>
+        <p>Si vous n'avez pas demandé cette inscription, vous pouvez ignorer cet e-mail.</p>
+        <div class="footer">
+            <p>&copy; {{ current_year }} Notre Site. Tous droits réservés.</p>
+        </div>
+    </div>
+</body>
+</html>

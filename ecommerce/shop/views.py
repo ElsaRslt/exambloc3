@@ -35,6 +35,15 @@ from django.utils.timezone import now
 from datetime import timedelta
 from .tokens import account_activation_token
 from django.contrib.auth.forms import AuthenticationForm
+from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login
+from django.contrib import messages
+from django.core.mail import send_mail
+from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+
 
 # Fonction qui va permettre d'afficher le fichier index et les images
 def index(request):
@@ -65,6 +74,10 @@ def detail(request, myid):
 def panier(request):
     panier = request.session.get('panier', {})
     return render(request, 'panier.html', {'panier': panier})
+
+# Fonction pour afficher la page pour renvoyer le mail pour validation mail utilisareur 
+def renvoyer_email(request):
+    return render(request, 'renvoyer_email.html')
 
 """ # Fonction pour afficher la page d'inscription
 def inscription(request):
@@ -100,7 +113,14 @@ def envoyer_email_confirmation(user, request):
         'uidb64': urlsafe_base64_encode(force_bytes(user.pk)),
         'token': account_activation_token.make_token(user),
     })
-    send_mail(subject, message, 'noreply@example.com', [user.email])
+    email = EmailMessage(
+    subject,
+    message,
+    to=[user.email],
+    from_email='noreply@example.com'
+    )
+    email.content_subtype = 'html' 
+    email.send()
     
     
 # gestion de la validité du mail 
@@ -136,7 +156,20 @@ def valider_email(request, uidb64, token):
         print("Utilisateur non trouvé.")
         return render(request, 'email_invalid.html')  # Afficher un message d'email invalide
     
-    
+
+#renvoyer le mail de validation 
+def renvoyer_email_confirmation(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        User = get_user_model()
+        try:
+            user = User.objects.get(email=email)
+            if not user.email_verified:
+                envoyer_email_confirmation(user, request)
+                return render(request, 'email_renvoi_confirmation.html')
+        except User.DoesNotExist:
+            messages.error(request, "L'utilisateur n'existe pas. Merci de creer votre compte")
+    return render(request, 'renvoyer_email.html')
     
 #connexion à son espace 
 def connexion(request):
@@ -149,7 +182,10 @@ def connexion(request):
             user = authenticate(request, username=username, password=password)
             if user is not None:
                 if not user.email_verified:
-                    messages.error(request, "Merci de valider votre adresse email avant de vous connecter.")
+                    if 'resend_email' in request.POST:
+                        return redirect('renvoyer_email', uid=user.pk)
+                    else:
+                        messages.error(request, "Merci de valider votre adresse email avant de vous connecter.")
                 elif not user.is_active:
                     messages.error(request, "Votre compte a été désactivé.")
                 else:
@@ -168,6 +204,7 @@ def connexion(request):
 def deconnexion(request):
     logout(request)
     return redirect('home')  # Redirection vers la page d'accueil après déconnexion
+
 
 #recuperation nom et prenom pour espace perso 
 @login_required

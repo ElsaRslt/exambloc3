@@ -53,6 +53,12 @@ urlpatterns = [
     
     #pour valider le mail pour l'inscription
     path('valider-email/<uidb64>/<token>/', views.valider_email, name='valider_email'),
+    
+    #pour renvoyer le mail pour la validation du l'adresse mail 
+    path('renvoyer_email_confirmation/', views.renvoyer_email_confirmation, name='renvoyer_email_confirmation'),
+    
+    #pour la page pour renovyer le mail pour la validation du l'adresse mail 
+    path('renvoyer_email/', views.renvoyer_email, name='renvoyer_email'),
 ]
 
     
