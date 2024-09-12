@@ -26,6 +26,9 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.index, name='index'),  # La page d'accueil
     path('panier/', views.panier, name='panier'),  # Ajouter une route pour le panier
+    path('evenements/', views.evenements, name='evenements'),# URL pour la page évenements
+    path('sports/', views.sports, name='sports'),# URL pour la page sports
+    path('formules/', views.formules, name='formules'),# URL pour la page formules
     path('evenement/<int:myid>/', views.detail, name='detail'),  # Ajouter une route pour le détail de l'événement
     path('shop/', include('shop.urls')),
     path('inscription/', views.inscription, name='inscription'),# Ajouter une route pour la page d'inscription

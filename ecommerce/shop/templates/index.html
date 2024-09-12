@@ -2,7 +2,21 @@
 
 {%block content%}
 
-<!-- création du formulaire de recherche -->
+
+
+<!-- présentation des JO -->
+
+    <div class="row">
+        <h1>Bienvenue aux Jeux Olympiques Paris 2024 !</h1>
+        <p>Bienvenue sur la billetterie des Jeux Olympiques et Paralympiques de Paris 2024</p>
+        <a href="{% url 'formules'%}"  class="">Accéder aux Formules</a>
+        <a href="{% url 'evenements'%}" class="">Accéder aux Evenements</a>
+        <a href="{% url 'sports'%}" class="">Accéder aux Sports</a>
+
+
+    </div>
+
+    {% comment %} <!-- création du formulaire de recherche -->
     <div class="row">
         <div class="col-nd-12">
             <form class="card card-sm">
@@ -16,9 +30,9 @@
                 </div>
             </form>
         </div>
-    </div>
+    </div> {% endcomment %}
 
-<!--afficher les evenements sur la page -->
+{% comment %} <!--afficher les evenements sur la page -->
     <div class="row">
         {% for ev in evenement_object %}
         <div class="col-md-3">
@@ -39,10 +53,12 @@
         </div>
         {% endfor %}
     </div>
-    
+     {% endcomment %}
+
+
     <!--Mise en place de la pagination-->
 
-    <div class="row mt-3">
+    {% comment %} <div class="row mt-3">
         <div class="col-md-3 offeset-md-4">
             <ul class="pagination">
                 {% if evenement_object.has_previous%}
@@ -62,6 +78,6 @@
                 {% endif%}
             </ul>
         </div>
-    </div>
+    </div> {% endcomment %}
 
 {% endblock %}

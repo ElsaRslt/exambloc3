@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from .models import Evenement, Formule, Commande,  Utilisateur
+from .models import Evenement, Formule, Commande,  Utilisateur, Discipline
 from django.db.models import Q  # Import de l'opérateur Q pour les requêtes complexes
 from django.core.paginator import Paginator
 from django.shortcuts import render, get_object_or_404
@@ -46,7 +46,7 @@ from django.utils.encoding import force_bytes
 
 
 # Fonction qui va permettre d'afficher le fichier index et les images
-def index(request):
+def evenements(request):
     evenement_object = Evenement.objects.all()  # Sélection de tous les événements qui sont dans la BDD
     
     # Fonction pour faire la recherche via la barre de recherche
@@ -61,7 +61,7 @@ def index(request):
     paginator = Paginator( evenement_object,4) # on veut 4 evenement par page
     page = request.GET.get('page')
     evenement_object = paginator.get_page(page)
-    return render(request, 'index.html', {'evenement_object': evenement_object})
+    return render(request, 'evenements.html', {'evenement_object': evenement_object})
 
 
 #fonction pour afficher le detail des evenements quand on clique sur le bouton detail
@@ -74,6 +74,32 @@ def detail(request, myid):
 def panier(request):
     panier = request.session.get('panier', {})
     return render(request, 'panier.html', {'panier': panier})
+
+# Fonction pour afficher la page principale
+def index(request):
+    return render(request, 'index.html')
+
+# Fonction pour afficher la page sport
+def sports(request):
+    sports_object = Discipline.objects.all()  # Sélection de tous les sports qui sont dans la BDD
+        
+    # Fonction pour faire la recherche via la barre de recherche
+    items_name = request.GET.get('items-name')  # Récupération des informations dans le formulaire
+    if items_name != '' and items_name is not None:  # Recherche dans la barre
+        sports_object = Discipline.objects.filter(
+            Q(name__icontains=items_name) # Recherche dans le nom du sport
+            )
+            
+    #mise en place de la pagination    
+    paginator = Paginator( sports_object,4) # on veut 4 sports par page
+    page = request.GET.get('page')
+    sports_object = paginator.get_page(page)
+    return render(request, 'sports.html', {'sports_object': sports_object})
+
+
+# Fonction pour afficher la page formules
+def formules(request):
+    return render(request, 'formules.html')
 
 # Fonction pour afficher la page pour renvoyer le mail pour validation mail utilisareur 
 def renvoyer_email(request):

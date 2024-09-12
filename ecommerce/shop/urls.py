@@ -15,6 +15,15 @@ urlpatterns = [
     # URL pour le panier
     path('panier/', views.panier, name='panier'),
     
+    # URL pour la page évenements
+    path('evenements/', views.evenements, name='evenements'),
+    
+    # URL pour la page sports
+    path('sports/', views.sports, name='sports'),
+    
+        # URL pour la page formules
+    path('formules/', views.formules, name='formules'),
+
     # URL pour s'inscrire
     path('inscription/', views.inscription, name='inscription'),
     
@@ -50,15 +59,6 @@ urlpatterns = [
     path('paiement/', views.paiement, name='paiement'),
     
     path('telecharger-ebillet/<int:commande_id>/', views.telecharger_ebillet, name='telecharger_ebillet'),
-    
-    #pour valider le mail pour l'inscription
-    path('valider-email/<uidb64>/<token>/', views.valider_email, name='valider_email'),
-    
-    #pour renvoyer le mail pour la validation du l'adresse mail 
-    path('renvoyer_email_confirmation/', views.renvoyer_email_confirmation, name='renvoyer_email_confirmation'),
-    
-    #pour la page pour renovyer le mail pour la validation du l'adresse mail 
-    path('renvoyer_email/', views.renvoyer_email, name='renvoyer_email'),
 ]
 
     
