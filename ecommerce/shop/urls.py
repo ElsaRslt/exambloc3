@@ -50,6 +50,9 @@ urlpatterns = [
     path('paiement/', views.paiement, name='paiement'),
     
     path('telecharger-ebillet/<int:commande_id>/', views.telecharger_ebillet, name='telecharger_ebillet'),
+    
+    #pour valider le mail pour l'inscription
+    path('valider-email/<uidb64>/<token>/', views.valider_email, name='valider_email'),
 ]
 
     

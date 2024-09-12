@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from .models import Evenement, Formule, Commande
+from .models import Evenement, Formule, Commande,  Utilisateur
 from django.db.models import Q  # Import de l'opérateur Q pour les requêtes complexes
 from django.core.paginator import Paginator
 from django.shortcuts import render, get_object_or_404
@@ -23,6 +23,12 @@ from reportlab.lib.pagesizes import letter
 from PIL import Image
 from django.http import HttpResponse
 from zipfile import ZipFile
+from django.core.mail import send_mail
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.template.loader import render_to_string
+from django.contrib.sites.shortcuts import get_current_site
+from django.contrib.auth.tokens import default_token_generator
 
 # Fonction qui va permettre d'afficher le fichier index et les images
 def index(request):
@@ -67,11 +73,51 @@ def inscription(request):
     if request.method == 'POST':
         form = InscriptionForm(request.POST)
         if form.is_valid():
-            form.save()
-            return redirect('connexion')  # Redirection après la création du compte
+            user = form.save(commit=False)
+            user.is_active = False  # Désactiver le compte avant validation
+            user.save()
+            envoyer_email_confirmation(user, request)  # Envoyer email de confirmation
+            return render(request, 'email_sent.html')  # Page indiquant que l'email a été envoyé
     else:
         form = InscriptionForm()
     return render(request, 'inscription.html', {'form': form})
+
+
+# envoyer un email pour validation du compte 
+def envoyer_email_confirmation(user, request):
+    current_site = get_current_site(request)
+    subject = 'Confirmez votre adresse e-mail'
+    uidb64 = urlsafe_base64_encode(force_bytes(user.pk)) 
+    print(f"Debug uidb64: {uidb64}")
+    token = default_token_generator.make_token(user)
+    
+    message = render_to_string('email_confirmation.html', {
+        'user': user,
+        'domain': current_site.domain,
+        'uidb64': uidb64,
+        'token': token,
+    })
+    
+    send_mail(subject, message, 'noreply@example.com', [user.email])
+    
+    
+# gestion de la validité du mail 
+def valider_email(request, uidb64, token):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        print("UID décodé:", uid)
+        user = get_object_or_404(Utilisateur, pk=uid)
+    except (TypeError, ValueError, OverflowError):
+        user = None
+
+    if user is not None and default_token_generator.check_token(user, token):
+        user.is_active = True
+        user.save()
+        login(request, user)
+        return redirect('home')
+    else:
+        return render(request, 'email_invalid.html')
+
 
 #connexion à son espace 
 def connexion(request):

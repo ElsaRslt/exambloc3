@@ -1,0 +1,3 @@
+<p>Bonjour {{ user.nom }},</p>
+<p>Merci de vous être inscrit sur notre site. Veuillez cliquer sur le lien ci-dessous pour confirmer votre adresse e-mail :</p>
+<a href="http://{{ domain }}{% url 'valider_email' uidb64=uidb64 token=token %}">Confirmer mon adresse e-mail</a>
