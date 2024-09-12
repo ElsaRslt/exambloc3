@@ -7,11 +7,9 @@
             <h1>Connexion</h1>
 
             {% if messages %}
-            <div class="error-messages">
                 {% for message in messages %}
-                <p class="error">{{ message }}</p>
+                    <div class="alert alert-danger">{{ message }}</div>
                 {% endfor %}
-            </div>
             {% endif %}
 
             <form method="post" action="{% url 'connexion' %}">

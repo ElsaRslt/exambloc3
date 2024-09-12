@@ -127,3 +127,7 @@ EMAIL_HOST_PASSWORD = 's o v i x j x i x x d s j p d l'
 DEFAULT_FROM_EMAIL = 'joparis2024studi@gmail.com' 
 
 LOGIN_URL = '/connexion/'
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]

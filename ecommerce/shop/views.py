@@ -29,6 +29,12 @@ from django.utils.encoding import force_bytes, force_str
 from django.template.loader import render_to_string
 from django.contrib.sites.shortcuts import get_current_site
 from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_decode
+from django.utils.encoding import force_str
+from django.utils.timezone import now
+from datetime import timedelta
+from .tokens import account_activation_token
+from django.contrib.auth.forms import AuthenticationForm
 
 # Fonction qui va permettre d'afficher le fichier index et les images
 def index(request):
@@ -74,8 +80,9 @@ def inscription(request):
         form = InscriptionForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
-            user.is_active = False  # Désactiver le compte avant validation
+            #user.is_active = False   #Désactiver le compte avant validation
             user.save()
+            print(user)
             envoyer_email_confirmation(user, request)  # Envoyer email de confirmation
             return render(request, 'email_sent.html')  # Page indiquant que l'email a été envoyé
     else:
@@ -87,17 +94,12 @@ def inscription(request):
 def envoyer_email_confirmation(user, request):
     current_site = get_current_site(request)
     subject = 'Confirmez votre adresse e-mail'
-    uidb64 = urlsafe_base64_encode(force_bytes(user.pk)) 
-    print(f"Debug uidb64: {uidb64}")
-    token = default_token_generator.make_token(user)
-    
     message = render_to_string('email_confirmation.html', {
         'user': user,
         'domain': current_site.domain,
-        'uidb64': uidb64,
-        'token': token,
+        'uidb64': urlsafe_base64_encode(force_bytes(user.pk)),
+        'token': account_activation_token.make_token(user),
     })
-    
     send_mail(subject, message, 'noreply@example.com', [user.email])
     
     
@@ -107,30 +109,60 @@ def valider_email(request, uidb64, token):
         uid = force_str(urlsafe_base64_decode(uidb64))
         print("UID décodé:", uid)
         user = get_object_or_404(Utilisateur, pk=uid)
-    except (TypeError, ValueError, OverflowError):
-        user = None
-
-    if user is not None and default_token_generator.check_token(user, token):
-        user.is_active = True
-        user.save()
-        login(request, user)
-        return redirect('home')
-    else:
+    except (TypeError, ValueError, OverflowError) as e:
+        print(f"Erreur de décodage UID: {e}")
         return render(request, 'email_invalid.html')
 
+    if user is not None:
+        # Vérifier la validité du token
+        token_is_valid = account_activation_token.check_token(user, token)
+        print(f"Token valide: {token_is_valid}")
 
+        if token_is_valid:
+            # Vérifier si le token a expiré (10 minutes)
+            if now() - timedelta(minutes=10) < user.date_added:
+                user.is_active = True
+                user.email_verified = True  # Mettre à jour le champ email_verified
+                user.save()
+                login(request, user)
+                return redirect('home')
+            else:
+                print("Le token a expiré.")
+                return render(request, 'token_expired.html')  # Afficher un message d'expiration
+        else:
+            print("Token invalide.")
+            return render(request, 'email_invalid.html')  # Afficher un message d'email invalide
+    else:
+        print("Utilisateur non trouvé.")
+        return render(request, 'email_invalid.html')  # Afficher un message d'email invalide
+    
+    
+    
 #connexion à son espace 
 def connexion(request):
     if request.method == 'POST':
-        username = request.POST['username'] #récuperation du username avec methode post
-        password = request.POST['password'] #récuperation du mdp avec methode post
-        user = authenticate(request, username=username, password=password) # vérification que tout colle avec tout 
-        if user is not None: # si ok connexion
-            login(request, user)
-            return redirect('home')
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                if not user.email_verified:
+                    messages.error(request, "Merci de valider votre adresse email avant de vous connecter.")
+                elif not user.is_active:
+                    messages.error(request, "Votre compte a été désactivé.")
+                else:
+                    login(request, user)
+                    return redirect('home')
+            else:
+                messages.error(request, "Nom d'utilisateur ou mot de passe incorrect.")
         else:
-            messages.error(request, 'Nom d\'utilisateur ou mot de passe incorrect.') # si pas ok adieu 
-    return render(request, 'connexion.html')
+            messages.error(request, "Nom d'utilisateur ou mot de passe incorrect.")
+    else:
+        form = AuthenticationForm()
+
+    return render(request, 'connexion.html', {'form': form})
 
 # #deconnexion de son compte
 def deconnexion(request):

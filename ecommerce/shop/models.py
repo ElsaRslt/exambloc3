@@ -52,6 +52,7 @@ class Utilisateur(AbstractUser):
     cle_securite = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     username = models.CharField(max_length=150, unique=False)  # Le username devient obligatoire et unique
     date_added = models.DateTimeField(auto_now=True)
+    email_verified = models.BooleanField(default=False)  # Champ pour suivre la vérification de l'email
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', 'nom', 'prenom']  # username devient requis

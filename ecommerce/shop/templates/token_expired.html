@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+
+{%block content%}
+
+<h1>Le lien de validation a expiré</h1>
+<p>Veuillez vous réinscrire pour recevoir un nouveau lien de validation.</p>
+<a href="{% url 'inscription' %}">Retourner à la page d'inscription</a>
+
+{% endblock %}
