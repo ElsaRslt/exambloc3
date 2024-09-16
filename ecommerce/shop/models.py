@@ -10,6 +10,8 @@ from django.conf import settings
 class Discipline (models.Model):
     name = models.CharField(max_length=200)
     date_added = models.DateTimeField(auto_now=True)
+    description = models.TextField()
+    image = models.ImageField(upload_to='sport_images/')
 #la derniere discipline créée se place en premier dans la liste 
     class Meta:
         ordering = ['-date_added']
@@ -21,6 +23,7 @@ class Discipline (models.Model):
 class Formule (models.Model):
     formule = models.CharField(max_length=200)
     price_multiplier = models.FloatField()
+    description = models.TextField()
     # evet_rattache = models.ForeignKey(Evenement, related_name = 'EV', on_delete=models.CASCADE)
     def __str__(self):
         return self.formule
