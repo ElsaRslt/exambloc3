@@ -440,3 +440,6 @@ def telecharger_ebillet(request, commande_id):
         return HttpResponse('Commande introuvable.', status=404)
     except Exception as e:
         return HttpResponse(f'Erreur lors du téléchargement des e-billets: {str(e)}', status=500)
+    
+    
+    

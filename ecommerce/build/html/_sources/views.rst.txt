@@ -1,0 +1,17 @@
+Vues (Views)
+============
+
+Les vues sont responsables de la logique métier de l'application.
+
+.. automodule:: ecommerce.views
+   :members:
+
+Vue `proceder_au_paiement`
+--------------------------
+
+Cette vue permet de gérer le processus de paiement. Elle prend en compte les événements et les formules choisis par l'utilisateur pour générer les e-billets.
+
+Vue `inscription`
+-----------------
+
+Gère l'inscription des utilisateurs en vérifiant et en enregistrant leurs informations.
