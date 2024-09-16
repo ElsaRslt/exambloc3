@@ -45,7 +45,7 @@ from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 
 
-# Fonction qui va permettre d'afficher le fichier index et les images
+# Fonction pour afficher les évenements sur la page 
 def evenements(request):
     evenement_object = Evenement.objects.all()  # Sélection de tous les événements qui sont dans la BDD
     
@@ -99,7 +99,8 @@ def sports(request):
 
 # Fonction pour afficher la page formules
 def formules(request):
-    return render(request, 'formules.html')
+    formule_object=Formule.objects.all()
+    return render(request, 'formules.html', {'formule_object': formule_object})
 
 # Fonction pour afficher la page pour renvoyer le mail pour validation mail utilisareur 
 def renvoyer_email(request):
