@@ -2,29 +2,46 @@
 
 {% block content %}
 
-<div class="container">
-    <div class="form">
-        <h1>Connexion</h1>
+<div class="container mt-5">
+    <div class="row text-center mb-4">
+        <div class="col-12">
+            <h1>Connexion</h1>
+            <p class="lead">Veuillez vous connecter pour accéder à votre compte.</p>
+        </div>
+    </div>
 
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-danger">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
 
-        <form method="post" action="{% url 'connexion' %}">
-            {% csrf_token %}
-            <label for="username">Email</label>
-            <input type="text" name="username" required>
-            <label for="password">Mot de passe</label>
-            <input type="password" name="password" required>
-            <button type="submit">Se connecter</button>
-        </form>
-        
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-danger" role="alert">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
 
-        <p class="link">Pas encore inscrit ? <a href="{% url 'inscription' %}">S'inscrire</a></p>
-        <p class="link">Mot de passe oublié? <a href="{% url 'password_reset' %}">Mot de passe oublié ?</a></p>
-        <p class="link">Vous n'avez pas valider votre adresse mail? <a href="{% url 'renvoyer_email' %}">Valider mon mail</a></p>
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <form method="post" action="{% url 'connexion' %}">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="username">Email</label>
+                            <input type="text" class="form-control" name="username" id="username" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Mot de passe</label>
+                            <input type="password" class="form-control" name="password" id="password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">Se connecter</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="text-center mt-3">
+                <p class="mb-1">Pas encore inscrit ? <a href="{% url 'inscription' %}" class="btn btn-link">S'inscrire</a></p>
+                <p class="mb-1">Mot de passe oublié ? <a href="{% url 'password_reset' %}" class="btn btn-link">Réinitialiser mon mot de passe</a></p>
+                <p class="mb-1">Vous n'avez pas validé votre adresse mail ? <a href="{% url 'renvoyer_email' %}" class="btn btn-link">Valider mon mail</a></p>
+            </div>
+        </div>
     </div>
 </div>
 
