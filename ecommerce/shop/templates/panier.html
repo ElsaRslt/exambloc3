@@ -148,20 +148,20 @@
     // Fonction pour supprimer un article
     function handleRemoveItem(event) {
         if (event.target.classList.contains('remove-item')) {
-            let itemId = event.target.getAttribute('data-item-id');
+            // Utiliser closest pour accéder à l'élément <tr> qui contient le data-item-id
+            let itemId = event.target.closest('tr').getAttribute('data-item-id');
             let panier = JSON.parse(localStorage.getItem('panier')) || {};
-
+    
             delete panier[itemId];
             updateLocalStorage(panier);
-
+    
             let itemRow = event.target.closest('tr');
             itemRow.remove();
-
+    
             // Mettre à jour les totaux
             updateTotals();
         }
     }
-
     // Ajouter les écouteurs d'événements pour les suppressions
     document.getElementById('panierItems').addEventListener('click', handleRemoveItem);
 

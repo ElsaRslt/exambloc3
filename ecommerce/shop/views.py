@@ -1,48 +1,30 @@
-from django.shortcuts import render, redirect
-from .models import Evenement, Formule, Commande,  Utilisateur, Discipline
-from django.db.models import Q  # Import de l'opérateur Q pour les requêtes complexes
-from django.core.paginator import Paginator
-from django.shortcuts import render, get_object_or_404
-from django.contrib.auth.forms import UserCreationForm 
-from .form import InscriptionForm
-from django.contrib.auth import login, authenticate, logout
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth import login, authenticate, logout, get_user_model
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-import json
-import qrcode
-from io import BytesIO
+from django.core.paginator import Paginator
 from django.core.mail import EmailMessage
 from django.conf import settings
-import os
-from django.http import FileResponse, Http404
-from reportlab.lib.pagesizes import A4
-from reportlab.pdfgen import canvas
-from reportlab.lib import colors
-from reportlab.lib.units import cm
-from reportlab.lib.pagesizes import letter
-from PIL import Image
-from django.http import HttpResponse
-from zipfile import ZipFile
-from django.core.mail import send_mail
+from django.http import FileResponse, HttpResponse
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.template.loader import render_to_string
 from django.contrib.sites.shortcuts import get_current_site
-from django.contrib.auth.tokens import default_token_generator
-from django.utils.http import urlsafe_base64_decode
-from django.utils.encoding import force_str
 from django.utils.timezone import now
 from datetime import timedelta
+import json
+import qrcode
+import os
+from io import BytesIO
+from zipfile import ZipFile
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
+from PIL import Image
+
+from .models import Evenement, Formule, Commande, Utilisateur, Discipline
+from .form import InscriptionForm
 from .tokens import account_activation_token
-from django.contrib.auth.forms import AuthenticationForm
-from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login
-from django.contrib import messages
-from django.core.mail import send_mail
-from django.conf import settings
-from django.contrib.auth import get_user_model
-from django.utils.http import urlsafe_base64_encode
-from django.utils.encoding import force_bytes
 
 
 # Fonction pour afficher les évenements sur la page 
@@ -287,6 +269,7 @@ def proceder_au_paiement(request):
             try:
                 formule_name = item.get('formule')
                 evenement_id = item.get('ID')
+                quantity = item.get('quantity', 1)  
 
                 if not formule_name or not evenement_id:
                     print(f"Erreur: formule_name ou evenement_id manquant pour item {key}")
@@ -298,14 +281,18 @@ def proceder_au_paiement(request):
 
                 print(f"Récupération réussie - Formule: {formule.formule}, Evénement: {evenement.title}")
 
-                ebillet_path = generate_ebillet(utilisateur, commande, evenement, formule)
-                ebillet_paths.append(ebillet_path)
+                for _ in range(quantity):
+                    ebillet_path = generate_ebillet(utilisateur, commande, evenement, formule)
+                    ebillet_paths.append(ebillet_path)
+                    
+                # Ajouter la formule et l'événement à la commande autant de fois que nécessaire
+                formules.update([formule] * quantity)
+                evenements.update([evenement] * quantity)
                 
-                formules.add(formule)
-                evenements.add(evenement)
             except (Formule.DoesNotExist, Evenement.DoesNotExist):
                 print(f"Erreur pour item {key}: Formule ou événement non trouvé")
                 continue
+
         
         commande.formules.set(formules)
         commande.evenements.set(evenements)
