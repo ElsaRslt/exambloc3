@@ -78,13 +78,13 @@
 {% block js %}
 
 <script type="text/javascript">
-
-    //on regarde si le panier est nul. si c'est le cas création d'un panier
+    // on regarde si le panier est nul. si c'est le cas création d'un panier
     if(localStorage.getItem('panier')==null){
         var panier ={};
-    // si c'est pas le cas on ajoute     
+        console.log("Panier initialisé vide.");  // Debug 
     }else{
         panier = JSON.parse(localStorage.getItem('panier'));
+        console.log("Panier récupéré du localStorage:", panier);  // Debug 
     }
 
     // Fonction pour calculer le nombre total d'articles dans le panier
@@ -92,9 +92,10 @@
         let total = 0;
         for (let key in panier) {
             if (panier.hasOwnProperty(key)) {
-                total += parseInt(panier[key].quantity); 
+                total += parseInt(panier[key].quantity);
             }
         }
+        console.log("Total d'articles dans le panier:", total);  // Debug
         return total;
     }
 
@@ -104,6 +105,7 @@
         for (let key in panier) {
             totalPrix += parseFloat(panier[key].price) * panier[key].quantity;
         }
+        console.log("Prix total calculé:", totalPrix.toFixed(2));  // Debug
         return totalPrix.toFixed(2); // garder deux décimales 
     }
 
@@ -112,12 +114,12 @@
         let panier = JSON.parse(localStorage.getItem('panier')) || {};
         let totalArticles = nbTotalArticle(panier);
         document.getElementById("shopping").innerHTML = "Panier(" + totalArticles + ")";
-        console.log(totalArticles);
+        console.log("Articles totaux dans le panier après chargement de la page:", totalArticles);  // Debug
 
-    // Initialiser le popover avec le déclencheur 'hover'
+        // Initialiser le popover avec le déclencheur 'hover'
         $('#shopping').popover({
             trigger: 'hover',
-            html:true,
+            html: true,
         });
         updatePopover();
     });
@@ -132,8 +134,8 @@
         }
         panierString += "</ul>";
         document.getElementById('shopping').setAttribute('data-content', panierString);
+        console.log("Contenu du panier dans le popover:", panierString);  // Debug
     }
-
 
     // Ajouter un écouteur d'événement pour le bouton Ajouter au panier (uniquement si présent sur la page)
     document.addEventListener('DOMContentLoaded', function() {
@@ -141,71 +143,64 @@
         
         const addToCartButton = document.getElementById('add-to-cart-btn');
         const errorMessage = document.getElementById('error-message');
+        
         if (addToCartButton) {
             addToCartButton.addEventListener('click', function(event) {
-                event.preventDefault(); // pour ne pas recharger la page et voir le debug en console
-                console.log("ajouter");
-
-                var item_id = this.getAttribute('data-item-id');
-                var item_name = document.querySelector("#titre_ev").textContent.trim(); // obtenir le nom de l'événement
-                var item_formule = document.querySelector("select[name='formule']").value.trim(); // Récupère la valeur sélectionnée la nom de la formule
-                var item_price = document.querySelector("#prix_total").textContent.trim(); // le prix
-
+                event.preventDefault(); // Empêche le rechargement de la page
+                
+                // Récupérer les attributs et éléments nécessaires
+                var item_id = this.getAttribute('data-item-id'); 
+                var item_name = document.querySelector("#titre_ev").textContent.trim(); // Nom de l'événement
+                var item_formule = document.querySelector("select[name='formule']").value.trim(); // Nom de la formule
+                var item_price = document.querySelector("#prix_total").textContent.trim(); // Prix total
+    
+                // Vérifiez si l'ID de l'élément est bien récupéré
+                if (!item_id || item_id === "") {
+                    console.error("Erreur: item_id est manquant.");
+                    return;
+                }
+    
                 if (!item_formule) {
-                    errorMessage.style.display = 'block'; // Afficher le message d'erreur
-                    return; // Arrêter l'exécution de la fonction si aucune formule n'est sélectionnée
+                    errorMessage.style.display = 'block'; // Affiche le message d'erreur
+                    return; // Arrête l'exécution si aucune formule n'est sélectionnée
                 } else {
-                    errorMessage.style.display = 'none'; // Masquer le message d'erreur
+                    errorMessage.style.display = 'none'; // Cache le message d'erreur
                 }
-                
-                
-                console.log(" item_id= "+ item_id +" item_name= " +item_name+ " item_formule= " +item_formule+ " item_price= " +item_price);
-
-                if (panier[item_id + '_' + item_formule] !== undefined) { 
-                    panier[item_id + '_' + item_formule].quantity += 1;
+    
+                // Crée une clé unique en combinant l'ID de l'événement et la formule
+                var panier_key = item_id + '_' + item_formule;
+                console.log("Détails de l'article à ajouter: ID =", item_id, "Nom =", item_name, "Formule =", item_formule, "Prix =", item_price);
+    
+                if (panier[panier_key] !== undefined) {
+                    // Si l'élément existe déjà dans le panier, on augmente la quantité
+                    panier[panier_key].quantity += 1;
+                    console.log("Quantité mise à jour pour:", panier[panier_key]);
                 } else {
-                    panier[item_id + '_' + item_formule] = { 
+                    // Sinon, on ajoute l'élément au panier
+                    panier[panier_key] = { 
+                        ID: item_id,
                         name: item_name, 
-                        formule: item_formule, // Nom de la formule 
-                        price: item_price, // Prix
+                        formule: item_formule, 
+                        price: item_price, 
                         quantity: 1
-                    }; 
+                    };
+                    console.log("Nouvel article ajouté au panier:", panier[panier_key]);
                 }
-
-                console.log(panier);
-
-                localStorage.setItem('panier', JSON.stringify(panier)); // Récupération du panier depuis localStorage au chargement de la page
-
-                // Pour afficher dans le panier dans la navbar le nombre total d'articles ajoutés au panier 
+    
+                // Mettre à jour le panier dans localStorage
+                localStorage.setItem('panier', JSON.stringify(panier));
+                console.log("Panier mis à jour:", panier);
+    
+                // Mettre à jour l'affichage du nombre total d'articles dans la navbar
                 let totalArticles = nbTotalArticle(panier);
                 document.getElementById("shopping").innerHTML = "Panier(" + totalArticles + ")";
-
+    
                 // Mettre à jour le contenu du popover
                 updatePopover();
             });
         }
     });
-            
-    
-    // recuperation du nom des produits cliqués pour les afficher dans le popover//
-    function AfficherListe(panier) {
-        var panierString = "<h5>Votre panier</h5>";
-        var index = 1;
-        for (var x in panier) {
-            panierString += index + ". " + panier[x].name + " - "+ panier[x].formule + " : " + panier[x].quantity +'<br/>';
-            index += 1;
-        }
-
-        //rajouter un bouton dans le popover pour voir le panier
-        // panierString += "<a href ='/panier' class='btn btn-primary'>Panier</a>"
-        
-    //affichage du popover quand on clique sur le panier//
-       // $('[data-toggle="popover"]').popover();
-    // change le contenu du texte du popover//
-        document.getElementById('shopping').setAttribute('data-content', panierString);
-    };
-
-    </script>
+</script>
 
 {% endblock %}
 </html>

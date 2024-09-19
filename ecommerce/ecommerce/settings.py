@@ -131,3 +131,4 @@ LOGIN_URL = '/connexion/'
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
+

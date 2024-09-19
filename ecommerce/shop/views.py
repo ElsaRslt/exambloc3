@@ -1,48 +1,30 @@
-from django.shortcuts import render, redirect
-from .models import Evenement, Formule, Commande,  Utilisateur, Discipline
-from django.db.models import Q  # Import de l'opérateur Q pour les requêtes complexes
-from django.core.paginator import Paginator
-from django.shortcuts import render, get_object_or_404
-from django.contrib.auth.forms import UserCreationForm 
-from .form import InscriptionForm
-from django.contrib.auth import login, authenticate, logout
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth import login, authenticate, logout, get_user_model
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-import json
-import qrcode
-from io import BytesIO
+from django.core.paginator import Paginator
 from django.core.mail import EmailMessage
 from django.conf import settings
-import os
-from django.http import FileResponse, Http404
-from reportlab.lib.pagesizes import A4
-from reportlab.pdfgen import canvas
-from reportlab.lib import colors
-from reportlab.lib.units import cm
-from reportlab.lib.pagesizes import letter
-from PIL import Image
-from django.http import HttpResponse
-from zipfile import ZipFile
-from django.core.mail import send_mail
+from django.http import FileResponse, HttpResponse
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.template.loader import render_to_string
 from django.contrib.sites.shortcuts import get_current_site
-from django.contrib.auth.tokens import default_token_generator
-from django.utils.http import urlsafe_base64_decode
-from django.utils.encoding import force_str
 from django.utils.timezone import now
 from datetime import timedelta
+import json
+import qrcode
+import os
+from io import BytesIO
+from zipfile import ZipFile
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
+from PIL import Image
+
+from .models import Evenement, Formule, Commande, Utilisateur, Discipline
+from .form import InscriptionForm
 from .tokens import account_activation_token
-from django.contrib.auth.forms import AuthenticationForm
-from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login
-from django.contrib import messages
-from django.core.mail import send_mail
-from django.conf import settings
-from django.contrib.auth import get_user_model
-from django.utils.http import urlsafe_base64_encode
-from django.utils.encoding import force_bytes
 
 
 # Fonction pour afficher les évenements sur la page 
@@ -261,16 +243,14 @@ def proceder_au_paiement(request):
 
         print(f"Panier Data: {panier_data}")
         print(f"Total Prix: {total_prix}")
-        print(f"utilisateur: {utilisateur }")
-        
-        # Convertir le panier_data en dictionnaire
+        print(f"Utilisateur: {utilisateur}")
+
         try:
             panier_data_dict = json.loads(panier_data)
         except json.JSONDecodeError:
             print("Erreur de décodage JSON pour le panier_data")
             return redirect('erreur_page')
 
-        # Créez une nouvelle commande
         commande = Commande(
             user=utilisateur,
             panier=panier_data,
@@ -279,48 +259,54 @@ def proceder_au_paiement(request):
         commande.save()
         print(f"Commande créée avec numéro: {commande.numero_commande}")
 
-        # Créez des e-billets pour chaque événement et mettez à jour la commande
         ebillet_paths = []
         
         formules = set()
         evenements = set()
         
-        for item_id, item in panier_data_dict.items():
+        for key, item in panier_data_dict.items():
+            print(f"Key: {key}, Contenu du panier: {item}")
             try:
-                formule = Formule.objects.get(formule=item.get('formule'))
-                evenement = Evenement.objects.get(title=item.get('name'))
-                print(f"ebillet ok etape 1")
+                formule_name = item.get('formule')
+                evenement_id = item.get('ID')
+                quantity = item.get('quantity', 1)  
+
+                if not formule_name or not evenement_id:
+                    print(f"Erreur: formule_name ou evenement_id manquant pour item {key}")
+                    continue
+
+                # Récupérer la formule avec le nom
+                formule = Formule.objects.get(formule=formule_name)
+                evenement = Evenement.objects.get(id=int(evenement_id))
+
+                print(f"Récupération réussie - Formule: {formule.formule}, Evénement: {evenement.title}")
+
+                for _ in range(quantity):
+                    ebillet_path = generate_ebillet(utilisateur, commande, evenement, formule)
+                    ebillet_paths.append(ebillet_path)
+                    
+                # Ajouter la formule et l'événement à la commande autant de fois que nécessaire
+                formules.update([formule] * quantity)
+                evenements.update([evenement] * quantity)
                 
-                # Générer un e-billet unique pour chaque combinaison événement-formule
-                ebillet_path = generate_ebillet(utilisateur, commande, evenement, formule)
-                ebillet_paths.append(ebillet_path)
-                
-                formules.add(formule)
-                evenements.add(evenement)
             except (Formule.DoesNotExist, Evenement.DoesNotExist):
-                print(f"Erreur pour item {item_id}: formule ou événement non trouvé")
+                print(f"Erreur pour item {key}: Formule ou événement non trouvé")
                 continue
+
         
-        # Ajouter les relations ManyToMany après avoir sauvegardé la commande
         commande.formules.set(formules)
         commande.evenements.set(evenements)
 
-        # Sauvegarder le chemin des e-billets générés dans la commande
-        commande.ebillet_path = json.dumps(ebillet_paths)  # Sauvegarder tous les chemins de e-billet sous forme de JSON
+        commande.ebillet_path = json.dumps(ebillet_paths)
         commande.save()
 
-        # Envoyer l'email de confirmation avec tous les billets en pièce jointe
         user_email = request.user.email
         send_confirmation_email(user_email, ebillet_paths)
-        print("email envoyé")
+        print("Email envoyé")
 
-        # Rediriger vers la page de confirmation de paiement
         return redirect('paiement')
     
-    # Si la requête n'est pas POST, rediriger vers le panier
     return redirect('panier')
-
-
 
 
 def generate_ebillet(utilisateur, commande, evenement, formule):#, event_price
@@ -407,36 +393,56 @@ def send_confirmation_email(user_email, ebillet_paths):
 @login_required
 def telecharger_ebillet(request, commande_id):
     try:
-        # Récupérer la commande
+        # Récupérer la commande pour l'utilisateur actuel
+        print(f"Recherche de la commande avec ID: {commande_id} pour l'utilisateur: {request.user}")
         commande = Commande.objects.get(id=commande_id, user=request.user)
-        
-        # Vérifier et corriger le format de ebillet_path
+        print(f"Commande trouvée: {commande}")
+
+        # Vérifier et corriger le format de ebillet_path (si nécessaire)
         try:
+            print("Tentative de décodage du champ ebillet_path")
             ebillet_paths = json.loads(commande.ebillet_path)
+            print(f"ebillet_paths décodé: {ebillet_paths}")
+
             if not isinstance(ebillet_paths, list):
-                raise ValueError("Le format des chemins des e-billets n'est pas une liste")
-        except json.JSONDecodeError:
+                raise ValueError("Le format des chemins des e-billets n'est pas une liste.")
+        except json.JSONDecodeError as e:
+            print(f"Erreur JSONDecodeError: {str(e)}")
             return HttpResponse('Erreur de décodage JSON.', status=400)
         except ValueError as e:
+            print(f"Erreur de format: {str(e)}")
             return HttpResponse(f'Erreur de format des données: {str(e)}', status=400)
-        
-        # Préparer une réponse pour le téléchargement de plusieurs fichiers
-        response = HttpResponse(content_type='application/zip')
-        response['Content-Disposition'] = f'attachment; filename="ebillets_{commande.numero_commande}.zip"'
 
-        # Créer un fichier zip pour les e-billets
+        # Préparer une réponse pour le téléchargement de plusieurs fichiers (fichier zip)
+        print("Préparation du fichier ZIP pour les e-billets")
         zip_buffer = BytesIO()
         with ZipFile(zip_buffer, 'w') as zip_file:
             for ebillet_path in ebillet_paths:
-                if os.path.exists(ebillet_path):
-                    zip_file.write(ebillet_path, os.path.basename(ebillet_path))
-        
-        # Finaliser le fichier zip
+                # Construire le chemin absolu du fichier
+                absolute_path = os.path.join(settings.MEDIA_ROOT, ebillet_path)
+                print(f"Vérification de l'existence du fichier: {absolute_path}")
+
+                # Vérifier si le fichier existe avant de l'ajouter au fichier zip
+                if os.path.exists(absolute_path):
+                    print(f"Ajout du fichier au ZIP: {absolute_path}")
+                    zip_file.write(absolute_path, os.path.basename(absolute_path))
+                else:
+                    print(f"Fichier non trouvé: {absolute_path}")
+                    return HttpResponse(f"Fichier non trouvé : {absolute_path}", status=404)
+
+        # Finaliser le fichier zip et l'envoyer dans la réponse
+        print("Fichier ZIP créé avec succès, envoi de la réponse.")
         zip_buffer.seek(0)
-        response.write(zip_buffer.getvalue())
+        response = FileResponse(zip_buffer, as_attachment=True, filename=f"ebillets_{commande.numero_commande}.zip")
         
         return response
+
     except Commande.DoesNotExist:
+        print(f"Commande introuvable: {commande_id}")
         return HttpResponse('Commande introuvable.', status=404)
     except Exception as e:
+        print(f"Erreur inattendue: {str(e)}")
         return HttpResponse(f'Erreur lors du téléchargement des e-billets: {str(e)}', status=500)
+    
+    
+    

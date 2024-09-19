@@ -6,6 +6,7 @@ from django.contrib.auth.models import AbstractUser, Group, Permission # pour av
 from django.conf import settings
 
 
+
 #création table des disciplines
 class Discipline (models.Model):
     name = models.CharField(max_length=200)
@@ -99,8 +100,8 @@ class Commande(models.Model):
         if not self.numero_commande:
             self.numero_commande = generate_order_number()
         super().save(*args, **kwargs)
-
+    
     def __str__(self):
         return f"Commande {self.numero_commande} - {self.user.username}"
-    
+
 
