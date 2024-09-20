@@ -59,6 +59,7 @@ urlpatterns = [
     path('paiement/', views.paiement, name='paiement'),
     
     path('telecharger-ebillet/<int:commande_id>/', views.telecharger_ebillet, name='telecharger_ebillet'),
+    
 ]
 
     

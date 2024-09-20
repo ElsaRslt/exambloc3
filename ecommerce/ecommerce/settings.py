@@ -16,7 +16,7 @@ SECRET_KEY = 'django-insecure-!mw_y!iohn!-dkl=8-+lr25q2dk%uj-^cly6j(gy%-j28zq97u
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True  # Change to False for production
 
-ALLOWED_HOSTS = ['jo2024shop-a568773133ec.herokuapp.com', '127.0.0.1']
+ALLOWED_HOSTS = ['54.36.181.58', '127.0.0.1']
 
 # Application definition
 INSTALLED_APPS = [
@@ -27,9 +27,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'shop',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -67,15 +69,16 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'jo2024',
-        'USER': 'elsa',
-        'PASSWORD': 'azerty',
+        'USER': 'root',
+        'PASSWORD': '',
         'HOST': '127.0.0.1',
         'PORT': '3306',
     },
     'sqlite': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    },
+
 }
 
 
@@ -113,8 +116,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# Activate Django-Heroku.
-django_heroku.settings(locals())
+# # Activate Django-Heroku.
+# django_heroku.settings(locals())
 
 AUTH_USER_MODEL = 'shop.Utilisateur'
 
@@ -133,3 +136,14 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
 
+CSRF_TRUSTED_ORIGINS = [
+    'http://54.36.181.58',
+]
+
+CORS_ALLOWED_ORIGINS = ['http://54.36.181.58', 'https://54.36.181.58']
+
+SECURE_SSL_REDIRECT = False
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False
+
+STATIC_ROOT = BASE_DIR / 'staticfiles'
