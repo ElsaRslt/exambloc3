@@ -24,6 +24,7 @@
                     <button id="add-to-cart-btn" type="submit" class="btn btn-success shopping_cart" data-item-id="{{ event.id }}">Ajouter au panier</button>
                     <p id="error-message" style="color: red; display: none;">Merci de sélectionner une formule.</p>
                 </form>
+                <a href="{% url 'evenements'%}" class="btn-outline-primary">Acheter un billet pour un autre événement</a>
             </div>
         </div>
     </div>

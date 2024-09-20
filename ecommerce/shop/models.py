@@ -2,7 +2,7 @@ from django.db import models
 import uuid
 import random
 import string
-from django.contrib.auth.models import AbstractUser, Group, Permission # pour avoir les fonctionnalité Django de la gestion utilisateur
+from django.contrib.auth.models import AbstractUser, Group, Permission 
 from django.conf import settings
 
 
@@ -12,7 +12,7 @@ class Discipline (models.Model):
     name = models.CharField(max_length=200)
     date_added = models.DateTimeField(auto_now=True)
     description = models.TextField()
-    image = models.ImageField(upload_to='sport_images/')
+    image = models.ImageField(upload_to='sport_images/', blank=True, null=True)
 #la derniere discipline créée se place en premier dans la liste 
     class Meta:
         ordering = ['-date_added']
@@ -36,7 +36,7 @@ class Evenement (models.Model):
     description = models.TextField()
     category = models.ForeignKey(Discipline, related_name = 'Discipline', on_delete=models.CASCADE)
     date_event = models.DateTimeField()
-    image = models.ImageField(upload_to='event_images/')
+    image = models.ImageField(upload_to='event_images/', blank=True, null=True)
     date_added = models.DateTimeField(auto_now=True)
     formules = models.ManyToManyField(Formule, related_name ='formule_choisie')
     base_price = models.FloatField(default=10.0)
