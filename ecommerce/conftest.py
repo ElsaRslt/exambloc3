@@ -3,6 +3,7 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
 from bs4 import BeautifulSoup
+from datetime import datetime
 
 @pytest.hookimpl(tryfirst=True)
 def pytest_sessionfinish(session, exitstatus):
@@ -52,6 +53,11 @@ def pytest_sessionfinish(session, exitstatus):
     # Titre
     c.setFont("Helvetica-Bold", 16)
     c.drawCentredString(width / 2, height - 50, "Rapport de test")
+    
+    # Date de génération
+    generation_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    c.setFont("Helvetica", 10)
+    c.drawString(50, height - 10, f"Date de génération : {generation_date}")
 
 
     # Ajouter les en-têtes de colonnes

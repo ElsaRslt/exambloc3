@@ -234,6 +234,24 @@ def commandes(request):
 def paiement(request):
     return render(request, 'paiement.html')
 
+# Fonction pour afficher la page du paiement
+def mock_paiement(request):
+    if request.method == 'POST':
+        panier_data = request.POST.get('panier_data')  # Récupérer les données du panier
+        total_prix = request.POST.get('total_prix')  # Récupérer le total du panier
+
+        # Si le panier est envoyé sous forme de JSON, on le charge comme dictionnaire
+        if panier_data:
+            panier_data = json.loads(panier_data)
+
+        # Rendre la page avec les données du panier et le total
+        return render(request, 'mock_paiement.html', {
+            'panier_data': panier_data,
+            'total_prix': total_prix
+        })
+
+    return render(request, 'mock_paiement.html')
+
 @login_required
 def proceder_au_paiement(request):
     if request.method == 'POST':
@@ -247,6 +265,8 @@ def proceder_au_paiement(request):
 
         try:
             panier_data_dict = json.loads(panier_data)
+            print(f"Structure du panier: {panier_data_dict}")
+            print(f"Panier Data (raw): {panier_data}")
         except json.JSONDecodeError:
             print("Erreur de décodage JSON pour le panier_data")
             return redirect('erreur_page')
@@ -265,7 +285,10 @@ def proceder_au_paiement(request):
         evenements = set()
         
         for key, item in panier_data_dict.items():
-            print(f"Key: {key}, Contenu du panier: {item}")
+            print(f"Key: {key}, Contenu du panier (type: {type(item)}): {item}")
+            if not isinstance(item, dict):
+                print(f"Erreur : item {key} n'est pas un dictionnaire. Type: {type(item)}")
+                continue
             try:
                 formule_name = item.get('formule')
                 evenement_id = item.get('ID')
