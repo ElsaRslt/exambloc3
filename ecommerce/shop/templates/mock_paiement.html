@@ -2,47 +2,52 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h2>Votre Panier</h2>
+    <h2>Payer</h2>
+
     <div class="row">
-        <!-- Colonne principale pour afficher les articles du panier -->
-        <div class="col-md-8">
-            <table class="table table-bordered">
-                <thead class="thead-dark">
-                    <tr>
-                        <th scope="col">Produit</th>
-                        <th scope="col">Formule</th>
-                        <th scope="col">Prix Unitaire</th>
-                        <th scope="col">Quantité</th>
-                        <th scope="col">Total</th>
-                        <th scope="col">Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="panierItems">
-                    <!-- Liste des articles du panier, mise à jour via le JS -->
-                </tbody>
-            </table>
+    <!-- Champs de simulation de paiement -->
+        <div class="col">
+            <div class="form-group">
+                <label for="card-number">Numéro de carte</label>
+                <input type="text" class="form-control" id="card-number" name="card_number" placeholder="1234 5678 9012 3456">
+            </div>
+            <div class="form-group">
+                <label for="expiry-date">Date d'expiration</label>
+                <input type="text" class="form-control" id="expiry-date" name="expiry_date" placeholder="MM/AA">
+            </div>
+            <div class="form-group">
+                <label for="cvv">CVV</label>
+                <input type="text" class="form-control" id="cvv" name="cvv" placeholder="123">
+            </div>
         </div>
-        <!-- Colonne pour afficher le résumé de la commande -->
+
+
         <div class="col-md-4">
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">Votre commande</h5>
-                    <p class="card-text">Nombre d'articles : <span id="total-articles">0</span></p>
-                    <p class="card-text">Total : <span id="total-price">0.00</span> €</p>
-                    <form id="checkout-form" action="{% url 'mock_paiement' %}" method="post">
+                    <p class="card-text">Nombre d'articles : 
+                        <span id="total-articles">
+                            {{ panier_data|length }}  <!-- Nombre total d'articles dans le panier -->
+                        </span>
+                    </p>
+                    <p class="card-text">Total : 
+                        <span id="total-price">
+                            {{ total_prix }}  <!-- Total prix -->
+                        </span> €
+                    </p>
+                    <form id="checkout-form" action="{% url 'proceder_au_paiement' %}" method="post">
                         {% csrf_token %}
-                        <input type="hidden" id="panier-data" name="panier_data" />
                         <input type="hidden" id="total-prix" name="total_prix" />
+                        <input type="hidden" id="panier-data" name="panier_data"/>
                         <button class="btn btn-primary" id="checkout-btn">Procéder au paiement</button>
                     </form>
                 </div>
             </div>
         </div>
-    </div>
-</div>
 {% endblock %}
 
-{% block java %}
+{% block java4 %}
 <script type="text/javascript">
 
     // Initialiser la page du panier
@@ -74,31 +79,14 @@
         let totalArticles = 0;
         let totalPrix = 0;
 
-        panierItems.innerHTML = ''; // Vider le contenu avant la mise à jour
-
         for (let key in panier) {
             if (panier.hasOwnProperty(key)) {
                 const item = panier[key];
                 const itemTotal = item.price * item.quantity;
                 totalArticles += item.quantity;
                 totalPrix += itemTotal;
-
-                // Ajouter une ligne au tableau
-                panierItems.innerHTML += `
-                <tr data-item-id="${key}">
-                    <td>${item.name}</td>
-                    <td>${item.formule}</td>
-                    <td>${parseFloat(item.price).toFixed(2)} €</td>
-                    <td><input type="number" class="form-control quantity" value="${item.quantity}" min="1"></td>
-                    <td class="item-total">${itemTotal.toFixed(2)} €</td>
-                    <td>
-                        <button class="btn btn-danger btn-sm remove-item">Supprimer</button>
-                    </td>
-                </tr>
-            `;
         }
     }
-
 
         // Mettre à jour les totaux affichés sur la page
         $('#total-articles').text(totalArticles);
@@ -139,31 +127,6 @@
             }
         }
     }
-
-    // Ajouter les écouteurs d'événements pour les modifications de quantité
-    $('#panierItems').on('change', '.quantity', handleQuantityChange);
-
-
-
-    // Fonction pour supprimer un article
-    function handleRemoveItem(event) {
-        if (event.target.classList.contains('remove-item')) {
-            // Utiliser closest pour accéder à l'élément <tr> qui contient le data-item-id
-            let itemId = event.target.closest('tr').getAttribute('data-item-id');
-            let panier = JSON.parse(localStorage.getItem('panier')) || {};
-    
-            delete panier[itemId];
-            updateLocalStorage(panier);
-    
-            let itemRow = event.target.closest('tr');
-            itemRow.remove();
-    
-            // Mettre à jour les totaux
-            updateTotals();
-        }
-    }
-    // Ajouter les écouteurs d'événements pour les suppressions
-    document.getElementById('panierItems').addEventListener('click', handleRemoveItem);
 
 
 // Quand on clique sur le bouton de paiement

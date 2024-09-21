@@ -60,6 +60,10 @@ urlpatterns = [
     
     path('telecharger-ebillet/<int:commande_id>/', views.telecharger_ebillet, name='telecharger_ebillet'),
     
+    # URL pour la page mock_paiement
+    path('mock_paiement/', views.mock_paiement, name='mock_paiement')
+
+    
 ]
 
     
