@@ -16,7 +16,7 @@ SECRET_KEY = 'django-insecure-!mw_y!iohn!-dkl=8-+lr25q2dk%uj-^cly6j(gy%-j28zq97u
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True  # Change to False for production
 
-ALLOWED_HOSTS = ['54.36.181.58', '127.0.0.1']
+ALLOWED_HOSTS = ['jo2024shop-e5f38238c523.herokuapp.com', '127.0.0.1']
 
 # Application definition
 INSTALLED_APPS = [
@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'shop',
     'corsheaders',
+    'whitenoise.runserver_nostatic',
 ]
 
 MIDDLEWARE = [
@@ -66,19 +67,20 @@ WSGI_APPLICATION = 'ecommerce.wsgi.application'
 
 # Database configuration
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'jo2024',
-        'USER': 'root',
-        'PASSWORD': '',
-        'HOST': '127.0.0.1',
-        'PORT': '3306',
-    },
-    'sqlite': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    },
-
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.mysql',
+    #     'NAME': 'jo2024',
+    #     'USER': 'root',
+    #     'PASSWORD': '',
+    #     'HOST': '127.0.0.1',
+    #     'PORT': '3306',
+    # },
+    # 'sqlite': {
+    #     'ENGINE': 'django.db.backends.sqlite3',
+    #     'NAME': BASE_DIR / 'db.sqlite3',
+    # },
+    
+    'default': dj_database_url.config(default=os.environ.get('JAWSDB_URL')),
 }
 
 
@@ -116,8 +118,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# # Activate Django-Heroku.
-# django_heroku.settings(locals())
+# Configure static files for Heroku
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# Activate Django-Heroku
+django_heroku.settings(locals())
 
 AUTH_USER_MODEL = 'shop.Utilisateur'
 
@@ -137,13 +142,12 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    'http://54.36.181.58',
+    'https://jo2024shop-e5f38238c523.herokuapp.com/',
 ]
 
-CORS_ALLOWED_ORIGINS = ['http://54.36.181.58', 'https://54.36.181.58']
+CORS_ALLOWED_ORIGINS = ['https://jo2024shop-e5f38238c523.herokuapp.com/']
 
-SECURE_SSL_REDIRECT = False
-SESSION_COOKIE_SECURE = False
-CSRF_COOKIE_SECURE = False
+SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
 
-STATIC_ROOT = BASE_DIR / 'staticfiles'
