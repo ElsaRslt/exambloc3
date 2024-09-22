@@ -1,5 +1,5 @@
 from django.test import TestCase
-from shop.models import Discipline, Formule, Evenement, Commande, Utilisateur
+from ecommerce.models import Discipline, Formule, Evenement, Commande, Utilisateur
 
 class DisciplineModelTest(TestCase):
     @classmethod

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Discipline, Evenement, Formule, Commande, Utilisateur
+from ecommerce.models import Discipline, Evenement, Formule, Commande, Utilisateur
 # from django.db.models import Sum
 # from django.db.models import Count
 import json

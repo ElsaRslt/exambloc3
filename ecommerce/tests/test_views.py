@@ -11,9 +11,9 @@ from django.utils.encoding import force_bytes, force_str
 from django.utils.timezone import now, timedelta
 from django.contrib.auth import get_user_model
 from django.test import TestCase
-from shop.tokens import account_activation_token
+from ecommerce.tokens import account_activation_token
 
-from shop.models import Evenement, Formule, Commande, Discipline
+from ecommerce.models import Evenement, Formule, Commande, Discipline
 
 class ViewsTestCase(TestCase):
     

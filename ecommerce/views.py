@@ -22,7 +22,7 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from PIL import Image
 
-from .models import Evenement, Formule, Commande, Utilisateur, Discipline
+from ecommerce.models import Evenement, Formule, Commande, Utilisateur, Discipline
 from .form import InscriptionForm
 from .tokens import account_activation_token
 
