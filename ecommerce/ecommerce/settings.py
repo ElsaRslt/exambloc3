@@ -6,6 +6,7 @@ import tempfile
 
 
 
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 TEMPLATES_DIRS = os.path.join(BASE_DIR, 'templates')
@@ -141,13 +142,11 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
 
-CSRF_TRUSTED_ORIGINS = [
-    'https://jo2024shop-e5f38238c523.herokuapp.com/',
-]
+# CSRF_TRUSTED_ORIGINS = [
+#     'https://jo2024shop-e5f38238c523.herokuapp.com/',
+# ]
 
-CORS_ALLOWED_ORIGINS = ['https://jo2024shop-e5f38238c523.herokuapp.com/']
-
-SECURE_SSL_REDIRECT = True
+SECURE_SSL_REDIRECT = False
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
