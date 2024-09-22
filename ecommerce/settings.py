@@ -27,7 +27,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'shop',
+    'ecommerce',
     'corsheaders',
     'whitenoise.runserver_nostatic',
 ]
@@ -81,7 +81,10 @@ DATABASES = {
     #     'NAME': BASE_DIR / 'db.sqlite3',
     # },
     
-    'default': dj_database_url.config(default=os.environ.get('JAWSDB_URL')),
+    'default': dj_database_url.config(
+        env='JAWSDB_URL'
+        
+        ),
 }
 
 
@@ -125,7 +128,7 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 # Activate Django-Heroku
 django_heroku.settings(locals())
 
-AUTH_USER_MODEL = 'shop.Utilisateur'
+AUTH_USER_MODEL = 'commerce.Utilisateur'
 
 # gestion des mails de recupérations MDP oubliés
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
