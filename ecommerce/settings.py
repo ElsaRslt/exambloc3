@@ -128,7 +128,7 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 # Activate Django-Heroku
 django_heroku.settings(locals())
 
-AUTH_USER_MODEL = 'commerce.Utilisateur'
+AUTH_USER_MODEL = 'ecommerce.Utilisateur'
 
 # gestion des mails de recupérations MDP oubliés
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
