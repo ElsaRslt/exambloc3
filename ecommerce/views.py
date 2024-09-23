@@ -21,10 +21,12 @@ from zipfile import ZipFile
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from PIL import Image
+from datetime import timedelta
 
 from ecommerce.models import Evenement, Formule, Commande, Utilisateur, Discipline
 from .form import InscriptionForm
 from .tokens import account_activation_token
+from django.contrib.auth.tokens import default_token_generator
 
 
 # Fonction pour afficher les évenements sur la page 
@@ -122,12 +124,17 @@ def envoyer_email_confirmation(user, request):
         'uidb64': urlsafe_base64_encode(force_bytes(user.pk)),
         'token': account_activation_token.make_token(user),
     })
+    
+    # Enregistrez le timestamp de l'envoi
+    request.session['email_sent_time'] = now().timestamp()
+    
     email = EmailMessage(
-    subject,
-    message,
-    to=[user.email],
-    from_email='noreply@example.com'
+        subject,
+        message,
+        to=[user.email],
+        from_email='noreply@example.com'
     )
+    
     email.content_subtype = 'html' 
     email.send()
     
@@ -147,9 +154,10 @@ def valider_email(request, uidb64, token):
         token_is_valid = account_activation_token.check_token(user, token)
         print(f"Token valide: {token_is_valid}")
 
-        if token_is_valid:
-            # Vérifier si le token a expiré (10 minutes)
-            if now() - timedelta(minutes=10) < user.date_added:
+        if token_is_valid :
+            print("le token est ok")
+            email_sent_time = request.session.get('email_sent_time')
+            if email_sent_time and not account_activation_token.token_expired(email_sent_time):
                 user.is_active = True
                 user.email_verified = True  # Mettre à jour le champ email_verified
                 user.save()
@@ -159,13 +167,12 @@ def valider_email(request, uidb64, token):
                 print("Le token a expiré.")
                 return render(request, 'token_expired.html')  # Afficher un message d'expiration
         else:
-            print("Token invalide.")
+            print("Utilisateur non trouvé.")
             return render(request, 'email_invalid.html')  # Afficher un message d'email invalide
     else:
         print("Utilisateur non trouvé.")
-        return render(request, 'email_invalid.html')  # Afficher un message d'email invalide
+        return render(request, 'email_invalid.html')
     
-
 #renvoyer le mail de validation 
 def renvoyer_email_confirmation(request):
     if request.method == 'POST':
