@@ -3,6 +3,9 @@ import os
 import django_heroku
 import dj_database_url
 import tempfile
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 
 
 
@@ -34,6 +37,7 @@ INSTALLED_APPS = [
     'ecommerce',
     'corsheaders',
     'whitenoise.runserver_nostatic',
+    'cloudinary',
 ]
 
 MIDDLEWARE = [
@@ -176,4 +180,11 @@ SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
 
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
+
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': 'ds3ombjaw',
+    'API_KEY': '232333385932363',
+    'API_SECRET': 'ton_api_secret',
+}
