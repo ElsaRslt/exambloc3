@@ -50,7 +50,7 @@ def evenements(request):
             Q(category__name__icontains=items_name)
         )
         
-    paginator = Paginator(evenement_object, 4)
+    paginator = Paginator(evenement_object, 15)
     page = request.GET.get('page')
     evenement_object = paginator.get_page(page)
 
@@ -87,7 +87,7 @@ def sports(request):
             )
             
     #mise en place de la pagination    
-    paginator = Paginator( sports_object,4) # on veut 4 sports par page
+    paginator = Paginator( sports_object,15) # on veut 15 sports par page
     page = request.GET.get('page')
     sports_object = paginator.get_page(page)
     return render(request, 'sports.html', {'sports_object': sports_object})
