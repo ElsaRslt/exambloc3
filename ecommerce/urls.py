@@ -2,7 +2,8 @@ from django.urls import path, include
 from ecommerce import views
 from django.contrib.auth import views as auth_views
 from django.contrib import admin
-
+from django.conf.urls.static import static
+from django.conf import settings
 
 
 urlpatterns = [
@@ -70,7 +71,7 @@ urlpatterns = [
     
     path('valider-email/<uidb64>/<token>/', views.valider_email, name='valider_email'),
 
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
     
 
