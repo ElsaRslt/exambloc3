@@ -29,6 +29,8 @@ from .tokens import account_activation_token
 from django.contrib.auth.tokens import default_token_generator
 
 
+
+
 # Fonction pour afficher les évenements sur la page 
 def evenements(request):
     evenement_object = Evenement.objects.all()  # Sélection de tous les événements qui sont dans la BDD
@@ -235,8 +237,41 @@ def home(request):
 # Fonction pour afficher la page des commandes et les commandes dans la page commandes
 def commandes(request):
     commandes = Commande.objects.filter(user=request.user).order_by('-date_commande')
+
+    for commande in commandes:
+        commande.evenement_formule_pairs = []
+
+        # Récupérer les données du panier en JSON pour associer événements et formules
+        panier_data_dict = json.loads(commande.panier)  # Assurez-vous que le format JSON est correct
+
+        for key, item in panier_data_dict.items():
+            if not isinstance(item, dict):
+                continue
+            try:
+                formule_name = item.get('formule')
+                evenement_id = item.get('ID')
+                quantity = item.get('quantity', 1)
+
+                if not formule_name or not evenement_id:
+                    continue
+
+                # Récupérer la formule et l'événement
+                formule = Formule.objects.get(formule=formule_name)
+                evenement = Evenement.objects.get(id=int(evenement_id))
+
+                # Ajouter les paires à la liste
+                for _ in range(quantity):
+                    commande.evenement_formule_pairs.append((evenement, formule))
+
+            except (Formule.DoesNotExist, Evenement.DoesNotExist):
+                continue
+
     return render(request, 'commandes.html', {'commandes': commandes})
 
+
+
+
+    return render(request, 'commandes.html', {'commandes': commandes})
 # Fonction pour afficher la page du paiement
 def paiement(request):
     return render(request, 'paiement.html')
@@ -327,7 +362,7 @@ def proceder_au_paiement(request):
         commande.formules.set(formules)
         commande.evenements.set(evenements)
 
-        commande.ebillet_path = json.dumps(ebillet_paths)
+        commande.ebillet_path = ";".join(ebillet_paths)
         commande.save()
 
         user_email = request.user.email
@@ -341,9 +376,7 @@ def proceder_au_paiement(request):
 
 def generate_ebillet(utilisateur, commande, evenement, formule):#, event_price
     # Chemin pour enregistrer le PDF
-    
-    
-    pdf_filename = f"ebillet_{commande.numero_commande}_{evenement.title}_{formule.formule}.pdf"
+    pdf_filename = f"ebillet_{commande.numero_commande}_{evenement.title.replace(' ', '_')}_{formule.formule.replace(' ', '_')}.pdf"
     ebillet_path = os.path.join(settings.MEDIA_ROOT, 'ebillets', pdf_filename)
     print(pdf_filename)
 
@@ -430,53 +463,27 @@ def telecharger_ebillet(request, commande_id):
         print(f"Commande trouvée: {commande}")
         print(f"ebillet_path brut: {commande.ebillet_path}")
 
-        # Vérifier et corriger le format de ebillet_path (si nécessaire)
-        try:
-            print("Tentative de décodage du champ ebillet_path")
-            ebillet_paths = json.loads(commande.ebillet_path)
-            print(f"ebillet_paths décodé: {ebillet_paths}")
+        ebillet_paths = commande.ebillet_path.split(";") 
 
-            if not isinstance(ebillet_paths, list):
-                raise ValueError("Le format des chemins des e-billets n'est pas une liste.")
-            
-        except json.JSONDecodeError as e:
-            print(f"Erreur JSONDecodeError: {str(e)}")
-            return HttpResponse('Erreur de décodage JSON.', status=400)
-        
-        except ValueError as e:
-            print(f"Erreur de format: {str(e)}")
-            return HttpResponse(f'Erreur de format des données: {str(e)}', status=400)
 
-        # Préparer une réponse pour le téléchargement de plusieurs fichiers (fichier zip)
-        print("Préparation du fichier ZIP pour les e-billets")
         zip_buffer = BytesIO()
         with ZipFile(zip_buffer, 'w') as zip_file:
             for ebillet_path in ebillet_paths:
-                # Construire le chemin absolu du fichier
-                absolute_path = os.path.join(settings.MEDIA_ROOT, ebillet_path)
-                print(f"Vérification de l'existence du fichier: {absolute_path}")
-
-                # Vérifier si le fichier existe avant de l'ajouter au fichier zip
+                # Construire le chemin absolu
+                absolute_path = os.path.join(settings.MEDIA_ROOT, ebillet_path.strip())
+                
                 if os.path.exists(absolute_path):
-                    print(f"Ajout du fichier au ZIP: {absolute_path}")
                     zip_file.write(absolute_path, os.path.basename(absolute_path))
                 else:
-                    print(f"Fichier non trouvé: {absolute_path}")
                     return HttpResponse(f"Fichier non trouvé : {absolute_path}", status=404)
 
         # Finaliser le fichier zip et l'envoyer dans la réponse
-        print("Fichier ZIP créé avec succès, envoi de la réponse.")
         zip_buffer.seek(0)
         response = FileResponse(zip_buffer, as_attachment=True, filename=f"ebillets_{commande.numero_commande}.zip")
         
         return response
 
     except Commande.DoesNotExist:
-        print(f"Commande introuvable: {commande_id}")
         return HttpResponse('Commande introuvable.', status=404)
     except Exception as e:
-        print(f"Erreur inattendue: {str(e)}")
         return HttpResponse(f'Erreur lors du téléchargement des e-billets: {str(e)}', status=500)
-    
-    
-    
