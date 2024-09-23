@@ -341,6 +341,8 @@ def proceder_au_paiement(request):
 
 def generate_ebillet(utilisateur, commande, evenement, formule):#, event_price
     # Chemin pour enregistrer le PDF
+    
+    
     pdf_filename = f"ebillet_{commande.numero_commande}_{evenement.title}_{formule.formule}.pdf"
     ebillet_path = os.path.join(settings.MEDIA_ROOT, 'ebillets', pdf_filename)
     print(pdf_filename)
@@ -379,10 +381,9 @@ def generate_ebillet(utilisateur, commande, evenement, formule):#, event_price
         print("ebillet enregistré")
         
     print("ebillet generé")
+    
 
     return ebillet_path
-
-
 
 
 #expédition du mail avec le ou les ebillets
@@ -427,6 +428,7 @@ def telecharger_ebillet(request, commande_id):
         print(f"Recherche de la commande avec ID: {commande_id} pour l'utilisateur: {request.user}")
         commande = Commande.objects.get(id=commande_id, user=request.user)
         print(f"Commande trouvée: {commande}")
+        print(f"ebillet_path brut: {commande.ebillet_path}")
 
         # Vérifier et corriger le format de ebillet_path (si nécessaire)
         try:
@@ -436,9 +438,11 @@ def telecharger_ebillet(request, commande_id):
 
             if not isinstance(ebillet_paths, list):
                 raise ValueError("Le format des chemins des e-billets n'est pas une liste.")
+            
         except json.JSONDecodeError as e:
             print(f"Erreur JSONDecodeError: {str(e)}")
             return HttpResponse('Erreur de décodage JSON.', status=400)
+        
         except ValueError as e:
             print(f"Erreur de format: {str(e)}")
             return HttpResponse(f'Erreur de format des données: {str(e)}', status=400)
