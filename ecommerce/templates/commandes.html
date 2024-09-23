@@ -2,7 +2,6 @@
 
 {% load custom_filters %}
 
-
 {% block content %}
 <div class="container mt-4">
     <h2>Suivi de vos commandes</h2>
@@ -23,31 +22,29 @@
                     <tr>
                         <td>{{ commande.numero_commande }}</td>
                         <td>{{ commande.date_commande|date:"d M Y H:i" }}</td>
-                            <td>
-                                <ul>
-                                    {% for evenement in commande.evenements.all %}
-                                        {% for formule in commande.formules.all %}
-                                            <li>{{ evenement.title }} - {{ formule.formule }}</li>
-                                        {% endfor %}
-                                    {% empty %}
-                                        Aucun événement ou formule
-                                    {% endfor %}
-                                </ul>
-                            </td>
-                        <td>{{ commande.prix_total }} €</td>
                         <td>
-                            {% if commande.ebillet_path %}
-                                <a href="{% url 'telecharger_ebillet' commande.id %}" class="btn btn-primary">Télécharger mon e-billet</a>
-                            {% else %}
-                                <span>E-billet non disponible</span>
-                            {% endif %}
+                            <ul>
+                                {% for evenement, formule in commande.evenement_formule_pairs %}
+                                    <li>
+                                        {{ evenement.title }} - {{ formule.formule }}
+                                    </li>
+                                {% endfor %}
+                            </ul>
                         </td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <p>Vous n'avez encore passé aucune commande.</p>
-    {% endif %}
+                    <td>{{ commande.prix_total }} €</td>
+                    <td>
+                        {% if commande.ebillet_path %}
+                            <a href="{% url 'telecharger_ebillet' commande.id %}" class="btn btn-primary">Télécharger mon e-billet</a>
+                        {% else %}
+                            <span>E-billet non disponible</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>Vous n'avez encore passé aucune commande.</p>
+{% endif %}
 </div>
 {% endblock %}

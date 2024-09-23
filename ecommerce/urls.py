@@ -1,12 +1,15 @@
 from django.urls import path, include
 from ecommerce import views
 from django.contrib.auth import views as auth_views
-from django.urls import path
-from django.contrib.auth import views as auth_views
-
+from django.contrib import admin
+from django.conf.urls.static import static
+from django.conf import settings
 
 
 urlpatterns = [
+    
+    path('admin/', admin.site.urls),
+    
     path('', views.index, name ='home'), 
     
     path('<int:myid>/', views.detail, name='detail'),
@@ -63,9 +66,12 @@ urlpatterns = [
     path('mock_paiement/', views.mock_paiement, name='mock_paiement'),
     
     path('renvoyer_email/', views.renvoyer_email, name='renvoyer_email'),
+    
+    path('renvoyer_email_confirmation/', views.renvoyer_email_confirmation, name='renvoyer_email_confirmation'),
+    
+    path('valider-email/<uidb64>/<token>/', views.valider_email, name='valider_email'),
 
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
     
-]
 
-    
