@@ -89,7 +89,7 @@ class Commande(models.Model):
     date_commande = models.DateTimeField(auto_now_add=True)
     cle_securite_commande = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     numero_commande = models.CharField(max_length=6, unique=True, blank=True, editable=False)
-    ebillet_path = models.CharField(max_length=255, null=True, blank=True)  # Stocker le chemin de l'e-billet
+    ebillet_path = models.TextField(null=True, blank=True)  # Stocker le chemin de l'e-billet
     date_added = models.DateTimeField(auto_now=True)
     
     # Utilisation de ManyToManyField pour associer plusieurs formules et événements à une commande

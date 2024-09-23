@@ -7,9 +7,19 @@
     <div class="d-flex flex-column justify-content-center align-items-center">
         <!-- Titre de la page -->
         <div class="text-center mb-4">
-            <h1>Retrouvez l'intégralité de nos événements</h1>
+            {% if sport_name %}
+                <h1>Retrouvez l'intégralité de nos événements rattachés au {{ sport_name }}</h1>
+            {% else %}
+                <h1>Retrouvez l'intégralité de nos événements</h1>
+            {% endif %}
             <p class="lead">Explorez tous les événements sportifs pour les Jeux Olympiques Paris 2024.</p>
         </div>
+
+    {% if sport_name %}
+        <div class="text-center mb-4">
+            <a href="{% url 'evenements' %}" class="btn btn-outline-primary">Voir les autres événements</a>
+        </div>
+    {% endif %}
     </div>
 
     <!-- Création du formulaire de recherche -->

@@ -33,21 +33,31 @@ from django.contrib.auth.tokens import default_token_generator
 
 # Fonction pour afficher les évenements sur la page 
 def evenements(request):
-    evenement_object = Evenement.objects.all()  # Sélection de tous les événements qui sont dans la BDD
+    evenement_object = Evenement.objects.all()
     
-    # Fonction pour faire la recherche via la barre de recherche
-    items_name = request.GET.get('items-name')  # Récupération des informations dans le formulaire
-    if items_name != '' and items_name is not None:  # Recherche dans la barre
-        evenement_object = Evenement.objects.filter(
-            Q(title__icontains=items_name) |  # Recherche dans le titre de l'événement
-            Q(category__name__icontains=items_name)  # Recherche dans le nom de la catégorie (discipline)
+    # Récupération de l'ID du sport depuis les paramètres de la requête
+    sport_id = request.GET.get('sport')
+    sport_name = None  # Variable pour stocker le nom du sport
+    if sport_id:
+        evenement_object = evenement_object.filter(category_id=sport_id)
+        # Récupération du nom du sport
+        sport_name = Discipline.objects.get(id=sport_id).name
+
+    items_name = request.GET.get('items-name')
+    if items_name != '' and items_name is not None:
+        evenement_object = evenement_object.filter(
+            Q(title__icontains=items_name) |
+            Q(category__name__icontains=items_name)
         )
         
-    #mise en place de la pagination    
-    paginator = Paginator( evenement_object,4) # on veut 4 evenement par page
+    paginator = Paginator(evenement_object, 4)
     page = request.GET.get('page')
     evenement_object = paginator.get_page(page)
-    return render(request, 'evenements.html', {'evenement_object': evenement_object})
+
+    return render(request, 'evenements.html', {
+        'evenement_object': evenement_object,
+        'sport_name': sport_name,  # Passer le nom du sport au template
+    })
 
 
 #fonction pour afficher le detail des evenements quand on clique sur le bouton detail
