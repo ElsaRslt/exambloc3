@@ -3,9 +3,9 @@ import os
 import django_heroku
 import dj_database_url
 import tempfile
-import cloudinary
-import cloudinary.uploader
-import cloudinary.api
+from django.conf import settings
+from decouple import config
+
 
 
 
@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'ecommerce',
     'corsheaders',
     'whitenoise.runserver_nostatic',
+    'storages',
 ]
 
 MIDDLEWARE = [
@@ -132,9 +133,8 @@ USE_I18N = True
 USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
-STATIC_URL = '/static/'
-# STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+#STATIC_URL = '/static/'
+#STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -144,7 +144,7 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Configure static files for Heroku
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+#STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Activate Django-Heroku
 django_heroku.settings(locals())
@@ -180,3 +180,20 @@ CSRF_COOKIE_SECURE = True
 
 
 
+# AWS S3 Configuration
+AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME')
+AWS_S3_REGION_NAME = config('AWS_S3_REGION_NAME')
+AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
+
+# Static files (CSS, JavaScript, etc.)
+STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/admin/'
+STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+
+# Media files (uploads)
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
