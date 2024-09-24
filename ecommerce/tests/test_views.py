@@ -62,7 +62,7 @@ class ViewsTestCase(TestCase):
         self.assertTemplateUsed(response, 'panier.html')
 
     def test_index_view(self):
-        response = self.client.get(reverse('index'))
+        response = self.client.get(reverse('home'))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'index.html')
 
@@ -140,4 +140,15 @@ class ViewsTestCase(TestCase):
         self.client.login(username='testuser', password='testpassword')
         response = self.client.post(reverse('telecharger_ebillet', args=[self.commande.id]), {'csrfmiddlewaretoken': 'testtoken'})
         self.assertEqual(response.status_code, 302)
-        print(response['Location'])  # Affiche l'URL de redirection
+        print(response['Location']) 
+
+    def test_paiement_view(self):
+        response = self.client.get(reverse('paiement'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'paiement.html')
+        
+        
+    def test_renvoyer_email_confirmation_view(self):
+        response = self.client.get(reverse('renvoyer_email'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'renvoyer_email.html')

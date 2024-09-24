@@ -104,7 +104,7 @@ class CommandeModelTest(TestCase):
             panier='{"items": [{"formule": "Test Formule", "quantity": 2}]}',
             prix_total=40.0,
             ebillet_path='path/to/ebillet.pdf',
-            numero_commande='TEST123'  # Numéro de commande fixe
+            numero_commande='TEST12'  # Numéro de commande fixe
         )
         cls.commande.formules.add(cls.formule)
         cls.commande.evenements.add(cls.evenement)
@@ -116,4 +116,4 @@ class CommandeModelTest(TestCase):
         self.assertIn(self.evenement, self.commande.evenements.all())
     
     def test_str_method(self):
-        self.assertEqual(str(self.commande), f"Commande TEST123 - {self.user.username}")
+        self.assertEqual(str(self.commande), f"Commande TEST12 - {self.user.username}")

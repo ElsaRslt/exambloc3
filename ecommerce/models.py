@@ -4,7 +4,6 @@ import random
 import string
 from django.contrib.auth.models import AbstractUser, Group, Permission 
 from django.conf import settings
-from cloudinary.models import CloudinaryField
 
 
 
@@ -13,7 +12,7 @@ class Discipline (models.Model):
     name = models.CharField(max_length=200)
     date_added = models.DateTimeField(auto_now=True)
     description = models.TextField()
-    image = CloudinaryField('image', blank=True, null=True)
+    image = models.ImageField(upload_to='sport_images/', blank=True, null=True)
 #la derniere discipline créée se place en premier dans la liste 
     class Meta:
         ordering = ['-date_added']
@@ -37,7 +36,7 @@ class Evenement (models.Model):
     description = models.TextField()
     category = models.ForeignKey(Discipline, related_name = 'Discipline', on_delete=models.CASCADE)
     date_event = models.DateTimeField()
-    image = CloudinaryField('image', blank=True, null=True)
+    image = models.ImageField(upload_to='sport_images/', blank=True, null=True)
     date_added = models.DateTimeField(auto_now=True)
     formules = models.ManyToManyField(Formule, related_name ='formule_choisie')
     base_price = models.FloatField(default=10.0)
