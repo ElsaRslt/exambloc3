@@ -5,19 +5,18 @@ Ce projet est un site e-commerce interne permettant la vente de billets pour les
 
 ## Fonctionnalités
 - **Vente de billets** : Les utilisateurs peuvent acheter des billets pour différents événements des JO 2024, en sélectionnant parmi trois formules.
-- **Gestion des sports et événements** : L'administrateur peut ajouter de nouveaux sports et événements via le panneau d'administration.
-- **Gestion des formules** : Trois formules de billets sont proposées aux utilisateurs, et l'administrateur peut en ajouter d'autres.
-- **Consultation des ventes** : L'administrateur peut consulter les ventes réalisées par formule.
+- **Gestion des sports et événements** : L'administrateur peut ajouter des sports et des évenements via le panneau d'administration.
+- **Gestion des formules** : Trois formules de billets sont proposées aux utilisateurs ( solo, duo et famille), l'administrateur peut en ajouter d'autres.
+- **Consultation des ventes** : L'administrateur peut consulter les ventes réalisées par formule et par évenements.
 
 
 ## Utilisation
-### Installation
 Ce projet est conçu pour une utilisation en interne, sans configuration supplémentaire requise. Cependant, voici les étapes pour le démarrer en local si nécessaire :
 
 1. Cloner le dépôt :
    ```bash
-   git clone https://github.com/votre-utilisateur/nom-du-repo
-   cd nom-du-repo
+   git clone https://github.com/ElsaRslt/exambloc3
+   cd exambloc3
    ```
 
 2. Installer les dépendances :
@@ -27,11 +26,11 @@ Ce projet est conçu pour une utilisation en interne, sans configuration supplé
 
 3. Démarrer le serveur Django :
    ```bash
-   python manage.py runserver
+   python manage.py runserver localhost:8081
    ```
 
 4. Accéder à l'administration :
-- **URL** : http://localhost:8000/admin
+- **URL** : http://127.0.0.1:8081/admin/
 - **Fonctionnalié**: L'administrateur peut se connecter et gérer les sports, événements, formules, et consulter les ventes.
 
 ## Contribuer
