@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <h2 class="text-center mb-4">Mon Compte</h2>
+
+                <!-- Informations de l'utilisateur -->
+                <div class="card p-4 shadow-sm">
+                    <p><strong>Nom :</strong> {{ nom }}</p>
+                    <p><strong>Prénom :</strong> {{ prenom }}</p>
+                    <p><strong>Email :</strong> {{ email }}</p>
+                    <p><strong>Mot de passe :</strong> {{ password }}</p> 
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{% url 'commandes' %}" class="btn btn-secondary">Voir mes commandes</a>
+                        <a href="{% url 'password_reset' %}" class="btn btn-danger">Réinitialiser le mot de passe</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+{% endblock %}

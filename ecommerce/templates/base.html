@@ -44,6 +44,9 @@
                             <a class="nav-link" href="{% url 'commandes' %}">Vos commandes</a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link" href="{% url 'profil' %}">Votre profil</a>
+                        </li>
+                        <li class="nav-item">
                             <form method="post" action="{% url 'deconnexion' %}">
                                 {% csrf_token %}
                                 <button type="submit" class="btn btn-outline-light">Déconnexion</button>
@@ -70,6 +73,7 @@
     <!-- Footer -->
     <footer class="bg-dark text-white text-center py-3 mt-5">
         &copy; 2024 JO Paris. Tous droits réservés.
+        <a class="nav-link" href="/admin/">Administration</a>
     </footer>
 </body>
 

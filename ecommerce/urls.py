@@ -6,9 +6,10 @@ from django.conf.urls.static import static
 from django.conf import settings
 
 
+
 urlpatterns = [
     
-    path('admin/', admin.site.urls),
+    path('admin/', admin.site.urls, name='admin'),
     
     path('', views.index, name ='home'), 
     
@@ -70,6 +71,10 @@ urlpatterns = [
     path('renvoyer_email_confirmation/', views.renvoyer_email_confirmation, name='renvoyer_email_confirmation'),
     
     path('valider-email/<uidb64>/<token>/', views.valider_email, name='valider_email'),
+    
+    # URL pour la page profil du client
+    path('profil/', views.profil, name='profil'),
+    
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

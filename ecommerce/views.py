@@ -497,3 +497,17 @@ def telecharger_ebillet(request, commande_id):
         return HttpResponse('Commande introuvable.', status=404)
     except Exception as e:
         return HttpResponse(f'Erreur lors du téléchargement des e-billets: {str(e)}', status=500)
+    
+    
+    
+# afficher les informations dans le compte clien 
+@login_required
+def profil(request):
+    utilisateur = request.user  # Récupère l'utilisateur connecté
+    context = {
+        'nom': utilisateur.nom,
+        'prenom': utilisateur.prenom,
+        'email': utilisateur.email,
+        'password': '*' * 8,  # Masquer le mot de passe avec 8 étoiles
+    }
+    return render(request, 'profil.html', context)
