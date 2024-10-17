@@ -24,7 +24,7 @@ if IS_HEROKU_APP:
 else:
     DEBUG = True
 
-ALLOWED_HOSTS = ['jo2024shop-e5f38238c523.herokuapp.com', '127.0.0.1']
+ALLOWED_HOSTS = ['elsajo2024-99c25e1230d9.herokuapp.com', '127.0.0.1']
 
 # Application definition
 INSTALLED_APPS = [
@@ -132,17 +132,9 @@ TIME_ZONE = 'Europe/Paris'
 USE_I18N = True
 USE_TZ = True
 
-# Static files (CSS, JavaScript, Images)
-#STATIC_URL = '/static/'
-#STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
-
-# Configure static files for Heroku
-#STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Activate Django-Heroku
 django_heroku.settings(locals(), staticfiles=False)
@@ -188,8 +180,7 @@ AWS_S3_OBJECT_PARAMETERS = {
     'CacheControl': 'max-age=86400',
 }
 
-# Static files (CSS, JavaScript, etc.)
-#STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/admin/'
+
 STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/static/'
 STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
@@ -201,5 +192,5 @@ MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Media files configuration
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+# MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
