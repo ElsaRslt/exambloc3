@@ -33,6 +33,13 @@ Ce projet est conçu pour une utilisation en interne, sans configuration supplé
 - **URL** : http://127.0.0.1:8081/admin/
 - **Fonctionnalié**: L'administrateur peut se connecter et gérer les sports, événements, formules, et consulter les ventes.
 
+## Migrations
+Avant d'exécuter le projet, assurez-vous que toutes les migrations sont appliquées:
+   ```bash
+   python manage.py makemigrations
+   python manage.py
+   ```
+
 ## Contribuer
 Si vous souhaitez apporter des modifications ou des améliorations au projet, veuillez suivre ces étapes :
 
