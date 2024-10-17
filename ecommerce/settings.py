@@ -139,15 +139,13 @@ USE_TZ = True
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Media files configuration
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 
 # Configure static files for Heroku
 #STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Activate Django-Heroku
-django_heroku.settings(locals())
+django_heroku.settings(locals(), staticfiles=False)
 
 AUTH_USER_MODEL = 'ecommerce.Utilisateur'
 
@@ -186,9 +184,13 @@ AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')
 AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME')
 AWS_S3_REGION_NAME = config('AWS_S3_REGION_NAME')
 AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
+AWS_S3_OBJECT_PARAMETERS = {
+    'CacheControl': 'max-age=86400',
+}
 
 # Static files (CSS, JavaScript, etc.)
-STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/admin/'
+#STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/admin/'
+STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/static/'
 STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
@@ -197,3 +199,7 @@ DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Media files configuration
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+

@@ -22,12 +22,17 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from PIL import Image
 from datetime import timedelta
+import tempfile
 
 from ecommerce.models import Evenement, Formule, Commande, Utilisateur, Discipline
 from .form import InscriptionForm
 from .tokens import account_activation_token
 from django.contrib.auth.tokens import default_token_generator
-
+from django.core.files.storage import default_storage
+import boto3
+from django.core.files.base import ContentFile
+from django.core.files import File
+from botocore.exceptions import NoCredentialsError
 
 
 
@@ -184,6 +189,8 @@ def valider_email(request, uidb64, token):
     else:
         print("Utilisateur non trouvé.")
         return render(request, 'email_invalid.html')
+    
+    
     
 #renvoyer le mail de validation 
 def renvoyer_email_confirmation(request):
@@ -384,7 +391,7 @@ def proceder_au_paiement(request):
     return redirect('panier')
 
 
-def generate_ebillet(utilisateur, commande, evenement, formule):#, event_price
+def generate_ebillet(utilisateur, commande, evenement, formule):
     # Chemin pour enregistrer le PDF
     pdf_filename = f"ebillet_{commande.numero_commande}_{evenement.title.replace(' ', '_')}_{formule.formule.replace(' ', '_')}.pdf"
     ebillet_path = os.path.join(settings.MEDIA_ROOT, 'ebillets', pdf_filename)
@@ -403,7 +410,6 @@ def generate_ebillet(utilisateur, commande, evenement, formule):#, event_price
     c.drawString(100, 740, f"Date de l'événement : {evenement.date_event.strftime('%d %b %Y %H:%M')}")
     c.drawString(100, 720, f"Nom de l'acheteur : {utilisateur.nom} {utilisateur.prenom}")
     c.drawString(100, 700, f"Commande n° : {commande.numero_commande}")
-    # c.drawString(100, 680, f"Prix : {event_price} €")
 
     # Générer le QR code spécifique à cet événement
     data = f"{utilisateur.cle_securite}-{commande.cle_securite_commande}-{evenement.title}-{evenement.date_event}-{formule.formule}"
@@ -423,45 +429,50 @@ def generate_ebillet(utilisateur, commande, evenement, formule):#, event_price
         f.write(buffer.getvalue())
         print("ebillet enregistré")
         
-    print("ebillet generé")
+    print("ebillet généré")
     
-
-    return ebillet_path
-
-
-#expédition du mail avec le ou les ebillets
-""" def send_confirmation_email(user_email, ebillet_paths):
-    email = EmailMessage(
-        'Confirmation de commande avec E-Billet',
-        'Merci pour votre commande. Veuillez trouver vos e-billets en pièce jointe.',
-        settings.DEFAULT_FROM_EMAIL,
-        [user_email],
-        print('email ok')
-    )
-
-    # Attacher chaque e-billet au mail
-    for path in ebillet_paths:
-        with open(path, 'rb') as f:
-            email.attach(f"ebillet_{os.path.basename(path)}", f.read(), 'application/pdf')
-            print('ebillets rattachés')
-
-    email.send() """
+    from django.core.files.storage import default_storage
+    s3_path = f"ebillets/{pdf_filename}"
+    with default_storage.open(s3_path, 'wb') as s3_file:
+        s3_file.write(buffer.getvalue())
     
+    print(s3_path)
+    return s3_path  
+
+
+#expédition du mail avec le ou les ebillets    
 def send_confirmation_email(user_email, ebillet_paths):
     subject = 'Votre Confirmation de votre Commande'
     message = 'Merci pour votre commande. Veuillez trouver en pièce jointe vos e-billets. Le service commercial des JO Paris 2024'
     email = EmailMessage(subject, message, settings.DEFAULT_FROM_EMAIL, [user_email])
     print('email ok')
-    
+
+    # Initialise le client S3
+    s3_client = boto3.client('s3',
+                            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+                            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+                            region_name=settings.AWS_S3_REGION_NAME)
+
     # Ajouter les e-billets en tant que pièces jointes
     for ebillet_path in ebillet_paths:
-        email.attach_file(ebillet_path)
-        print('ebillets rattachés')
+        try:
+            # Télécharger l'e-billet depuis S3
+            bucket_name = settings.AWS_STORAGE_BUCKET_NAME
+            response = s3_client.get_object(Bucket=bucket_name, Key=ebillet_path)
+            file_content = response['Body'].read()
+
+            # Attacher l'e-billet à l'e-mail
+            email.attach(ebillet_path.split('/')[-1], file_content, 'application/pdf')
+            print(f"E-billet {ebillet_path} rattaché")
+
+        except NoCredentialsError:
+            print(f"Erreur lors du téléchargement ou de l'attachement de {ebillet_path}: Unable to locate credentials")
+        except Exception as e:
+            print(f"Erreur lors du téléchargement ou de l'attachement de {ebillet_path}: {str(e)}")
     
+    # Envoyer l'e-mail
     email.send()
     print('ok fin du mail')
-    
-    
 
     
 @login_required
@@ -473,19 +484,26 @@ def telecharger_ebillet(request, commande_id):
         print(f"Commande trouvée: {commande}")
         print(f"ebillet_path brut: {commande.ebillet_path}")
 
-        ebillet_paths = commande.ebillet_path.split(";") 
+        # Séparer les différents chemins d'ebillets
+        ebillet_paths = commande.ebillet_path.split(";")
 
-
+        # Création du fichier ZIP en mémoire
         zip_buffer = BytesIO()
         with ZipFile(zip_buffer, 'w') as zip_file:
             for ebillet_path in ebillet_paths:
-                # Construire le chemin absolu
-                absolute_path = os.path.join(settings.MEDIA_ROOT, ebillet_path.strip())
-                
-                if os.path.exists(absolute_path):
-                    zip_file.write(absolute_path, os.path.basename(absolute_path))
-                else:
-                    return HttpResponse(f"Fichier non trouvé : {absolute_path}", status=404)
+                ebillet_path = ebillet_path.strip()  # Nettoyer les espaces
+                try:
+                    # Générer l'URL du fichier dans S3
+                    file_url = default_storage.url(ebillet_path)
+                    print(f"E-billet {ebillet_path} rattaché avec URL: {file_url}")
+
+                    # Ouvrir le fichier via l'URL (S3)
+                    with default_storage.open(ebillet_path, 'rb') as ebillet_file:
+                        # Ajouter le fichier au zip
+                        zip_file.writestr(os.path.basename(ebillet_path), ebillet_file.read())
+                except Exception as e:
+                    print(f"Erreur: {str(e)}")
+                    return HttpResponse(f"Fichier non trouvé dans S3 : {ebillet_path}", status=404)
 
         # Finaliser le fichier zip et l'envoyer dans la réponse
         zip_buffer.seek(0)
@@ -500,7 +518,7 @@ def telecharger_ebillet(request, commande_id):
     
     
     
-# afficher les informations dans le compte clien 
+# afficher les informations dans le compte client 
 @login_required
 def profil(request):
     utilisateur = request.user  # Récupère l'utilisateur connecté
