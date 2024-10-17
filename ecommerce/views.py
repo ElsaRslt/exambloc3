@@ -394,7 +394,7 @@ def proceder_au_paiement(request):
 def generate_ebillet(utilisateur, commande, evenement, formule):
     # Chemin pour enregistrer le PDF
     pdf_filename = f"ebillet_{commande.numero_commande}_{evenement.title.replace(' ', '_')}_{formule.formule.replace(' ', '_')}.pdf"
-    ebillet_path = os.path.join(settings.MEDIA_ROOT, 'ebillets', pdf_filename)
+    s3_pdf_path = f"ebillets/{pdf_filename}"
     print(pdf_filename)
 
     # Générer un buffer pour le PDF
@@ -414,31 +414,25 @@ def generate_ebillet(utilisateur, commande, evenement, formule):
     # Générer le QR code spécifique à cet événement
     data = f"{utilisateur.cle_securite}-{commande.cle_securite_commande}-{evenement.title}-{evenement.date_event}-{formule.formule}"
     qr = qrcode.make(data)
-    qr_path = os.path.join(settings.MEDIA_ROOT, 'qr_codes', f"qr_{commande.numero_commande}_{evenement.title}_{formule.formule}.png")
-    qr.save(qr_path)
+    # Enregistrer le QR code dans un fichier temporaire
+    with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as tmp_qr_file:
+        qr.save(tmp_qr_file, format='PNG')
+        qr_file_path = tmp_qr_file.name
 
     # Ajouter le QR code au PDF
-    c.drawImage(qr_path, 100, 600, width=100, height=100)
+    c.drawImage(qr_file_path, 100, 600, width=100, height=100)
 
     # Finaliser et sauvegarder le PDF
     c.showPage()
     c.save()
 
-    # Enregistrer le PDF dans un fichier
-    with open(ebillet_path, 'wb') as f:
-        f.write(buffer.getvalue())
-        print("ebillet enregistré")
-        
-    print("ebillet généré")
-    
-    from django.core.files.storage import default_storage
-    s3_path = f"ebillets/{pdf_filename}"
-    with default_storage.open(s3_path, 'wb') as s3_file:
+    # Enregistrer le PDF dans S3
+    with default_storage.open(s3_pdf_path, 'wb') as s3_file:
         s3_file.write(buffer.getvalue())
-    
-    print(s3_path)
-    return s3_path  
 
+    print("E-billet enregistré sur S3 à :", s3_pdf_path)
+
+    return s3_pdf_path
 
 #expédition du mail avec le ou les ebillets    
 def send_confirmation_email(user_email, ebillet_paths):

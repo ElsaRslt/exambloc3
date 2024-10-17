@@ -8,8 +8,6 @@ from decouple import config
 
 
 
-
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 TEMPLATES_DIRS = os.path.join(BASE_DIR, 'templates')
@@ -137,7 +135,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 # Activate Django-Heroku
-django_heroku.settings(locals(), staticfiles=False)
+django_heroku.settings(locals())#, staticfiles=False
 
 AUTH_USER_MODEL = 'ecommerce.Utilisateur'
 
@@ -183,7 +181,7 @@ AWS_S3_OBJECT_PARAMETERS = {
 
 STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/static/'
 STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+TATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
 # Media files (uploads)
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
